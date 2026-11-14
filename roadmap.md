@@ -42,3 +42,9 @@
 - [x] Add product-scoped printing selection and frozen browser-local job records
 - [x] Add stable CSV packages, manual confirmation, cancellation and identity-preserving reprints
 - [x] Add limited A4 PDF previews and verify multilingual workflows and unchanged identities
+
+# Issue #20 / L-011
+
+- [x] Commit five byte-identical original PNGs separately from UI changes
+- [x] Use horizontal admin logo, collapsed icon and source-derived favicon
+- [x] Verify desktop/mobile/collapsed navigation, favicon and unchanged consumer brand; deliver before/after screenshots

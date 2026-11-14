@@ -87,14 +87,22 @@ export function AdminLayout() {
       <div lang={language} className={cn("admin-shell", collapsed && "sidebar-collapsed")}>
         {mobileOpen && <div className="sidebar-scrim" onClick={() => setMobileOpen(false)} />}
         <aside className={cn("admin-sidebar", mobileOpen && "mobile-open")}>
-          <Link to="/admin" className="app-logo">
-            <span className="logo-symbol">
-              <QrCode size={21} />
-            </span>
-            <span className="sidebar-text">
-              iCode<span className="font-normal"> Connect</span>
-              <small>{t("PRODUCT EXPERIENCE PLATFORM")}</small>
-            </span>
+          <Link to="/admin" className="app-logo" aria-label="Product iCode Connect" title="Product iCode Connect">
+            <img
+              className="platform-logo-horizontal"
+              src="/brand/product-icode/01_Primary_Horizontal.png"
+              width={1413}
+              height={363}
+              alt="Product iCode"
+            />
+            <img
+              className="platform-logo-icon"
+              src="/brand/product-icode/04_Icon_Only.png"
+              width={638}
+              height={608}
+              alt="Product iCode"
+            />
+            <span className="platform-product-name">Product iCode Connect</span>
           </Link>
           <div className="workspace">
             <span className="brand-avatar">N</span>

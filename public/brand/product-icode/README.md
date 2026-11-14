@@ -8,7 +8,7 @@
 - [Extracted Logo asset package — PNG + PDF](https://drive.google.com/file/d/1DN0oGMhIpm4ebWYl_Eq49cPN2hxOdMsg/view)
 - [Chinese usage guide](https://docs.google.com/document/d/1UuPR3j6RwUuEf1ij72Bwu3zg-K9ykgguw5o7C-MaWXI/edit)
 
-**This directory currently contains this guidance file only.** The original binary PNG/PDF files must be committed by the website's editor or a Git client with binary upload support. Do not treat Drive URLs as website asset URLs; download the originals and commit them into this repository before using them in UI code.
+**The five original PNGs are versioned in this directory**, added unchanged from `iCode_Logo_PNG_PDF.zip` in commit `f8b3505a8e6b026e2ff490d34cb12906a5aa69f5`. PDF originals remain in Drive. Do not treat Drive URLs as website asset URLs.
 
 ## Expected versioned files in this directory
 
@@ -46,4 +46,4 @@ Do not replace a customer's consumer-facing brand logo with the platform logo. P
 4. Test desktop/mobile logo clarity, 1x/2x display, accessibility alt text, dark/light backgrounds.
 5. Build and check routes. No GTIN/Serial/Digital Link/Printing business logic changes.
 
-**Important:** files referenced above will return 404 until the image files are committed.
+The admin navigation uses the standard horizontal PNG, switching to the icon-only PNG when collapsed. `/favicon.png` is a 64 × 64 padded derivative of the icon-only original; the five canonical PNGs are never resized, cropped, recolored or regenerated. Their opaque white source canvases are preserved in light and dark themes.

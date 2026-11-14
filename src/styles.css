@@ -233,29 +233,33 @@
 }
 .app-logo {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 9px;
+  gap: 6px;
   color: var(--foreground);
-  font-size: 20px;
+  font-size: 11px;
   font-weight: 750;
   margin: 0 7px 31px;
   white-space: nowrap;
 }
-.logo-symbol {
-  background: var(--primary);
-  color: var(--primary-foreground);
-  width: 32px;
-  height: 34px;
-  border-radius: 7px;
-  display: grid;
-  place-items: center;
+:root {
+  /* Original RGB logo artwork has an opaque white canvas in every theme. */
+  --platform-logo-canvas: #fff;
 }
-.app-logo small {
-  display: block;
-  font-size: 7px;
-  color: var(--muted-foreground);
-  font-weight: 500;
-  margin-top: 4px;
+.platform-logo-horizontal {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1413 / 363;
+  object-fit: contain;
+  background: var(--platform-logo-canvas);
+}
+.platform-logo-icon {
+  display: none;
+  width: 36px;
+  height: auto;
+  aspect-ratio: 638 / 608;
+  object-fit: contain;
+  background: var(--platform-logo-canvas);
 }
 .workspace {
   display: flex;
@@ -1140,7 +1144,17 @@ td small {
   padding-right: 12px;
 }
 .sidebar-collapsed .app-logo {
-  margin-left: 9px;
+  margin-left: 0;
+  margin-right: 0;
+}
+@media (min-width: 900px) {
+  .sidebar-collapsed .platform-logo-horizontal,
+  .sidebar-collapsed .platform-product-name {
+    display: none;
+  }
+  .sidebar-collapsed .platform-logo-icon {
+    display: block;
+  }
 }
 .sidebar-collapsed .workspace {
   padding: 6px;
