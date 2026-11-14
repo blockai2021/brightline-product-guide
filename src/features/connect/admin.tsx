@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   ArrowDownToLine,
@@ -9,6 +9,7 @@ import {
   Box,
   Check,
   ChevronDown,
+  ChevronLeft,
   ChevronRight,
   CircleHelp,
   ClipboardList,
@@ -30,6 +31,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
@@ -38,7 +40,6 @@ import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
 import {
   assertIssuedGtinUnchanged,
-  createProductUnits,
   publishProduct,
   saveDraft,
   type Campaign,
@@ -49,6 +50,16 @@ import { cn } from "@/lib/utils";
 import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
 import { translateAdmin } from "./translations";
 import { ProductUnits } from "./product-units";
+import { downloadFile } from "./digital-link-qr";
+import {
+  buildMappingExportCsv,
+  initialMappingView,
+  mappingPage,
+  mappingPageSizes,
+  mappingRows,
+  mappingViewReducer,
+  type MappingFilters,
+} from "./transparency-table";
 const nav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Products", path: "/admin/products", icon: Box },
@@ -1401,77 +1412,35 @@ export function Marketing() {
 }
 export function Transparency() {
   const { t } = useAdminTranslation();
-  const { state, update } = useDemo();
-  const [productId, setProductId] = useState(state.products[0]?.draft.id || "");
-  const batches = state.batches.filter((item) => item.productId === productId);
-  const [batchId, setBatchId] = useState(batches[0]?.id || "");
-  const product = state.products.find((entry) => entry.draft.id === productId)?.draft;
-  const [serial, setSerial] = useState("");
+  const { state } = useDemo();
+  const [view, dispatch] = useReducer(mappingViewReducer, undefined, initialMappingView);
+  const rows = mappingRows(state, view.filters);
+  const pagination = mappingPage(rows, view.page, view.pageSize);
+  const selected = rows.filter((row) => view.selected.has(row.unit.id));
+  const pageIds = pagination.rows.map((row) => row.unit.id);
+  const checkedCount = pageIds.filter((id) => view.selected.has(id)).length;
+  const batches = state.batches.filter(
+    (batch) => !view.filters.productId || batch.productId === view.filters.productId,
+  );
+  function filter(change: Partial<MappingFilters>) {
+    dispatch({ type: "filter", filters: { ...view.filters, ...change } });
+  }
   useEffect(() => {
-    if (!state.products.some((entry) => entry.draft.id === productId))
-      setProductId(state.products[0]?.draft.id || "");
-  }, [productId, state.products]);
-  useEffect(() => {
-    if (!batches.some((batch) => batch.id === batchId)) setBatchId(batches[0]?.id || "");
-  }, [batchId, batches]);
-  function createUnits(serials: string[]) {
+    if (view.page !== pagination.page) dispatch({ type: "page", page: pagination.page });
+  }, [view.page, pagination.page]);
+  function exportMappings(selectedOnly: boolean) {
     try {
-      const result = createProductUnits(state, { productId, batchId, serials });
-      if (result.created.length) {
-        update(() => result.state);
-        setSerial("");
-        toast.success(
-          t("{count} unit identities created", { count: result.created.length }) +
-            (result.rejected.length ? ` · ${result.rejected.length} ${t("rejected")}` : ""),
-        );
-      } else {
-        toast.error(result.rejected.map((item) => item.reason).join(" · "));
-      }
-    } catch (error) {
+      downloadFile(
+        new Blob(["\uFEFF" + buildMappingExportCsv(state, selectedOnly ? selected : rows)], {
+          type: "text/csv;charset=utf-8",
+        }),
+        selectedOnly ? "demo-selected-mappings.csv" : "demo-filtered-mappings.csv",
+      );
+    } catch {
       toast.error(
-        error instanceof Error && error.message === "INVALID_GTIN"
-          ? t("Enter a GTIN with a valid check digit before creating units.")
-          : t("Select a product and one of its batches."),
+        t("Unable to export mappings. Check product, batch and Digital Link configuration."),
       );
     }
-  }
-  async function importCsv(file?: File) {
-    if (!file) return;
-    const rows = (await file.text())
-      .split(/\r?\n/)
-      .map((row) => row.trim())
-      .filter(Boolean);
-    const values = rows[0]?.toLowerCase() === "serial" ? rows.slice(1) : rows;
-    createUnits(values.map((row) => row.split(",")[0]?.trim() || ""));
-  }
-  function exportLabels() {
-    const units = state.units.filter((unit) => unit.productId === productId);
-    const rows = [
-      "unitId,productId,product,batchId,batch,gtin,serial,digitalLink",
-      ...units.map((unit) => {
-        const identity = state.identities.find((item) => item.unitId === unit.id);
-        const owner = state.products.find((entry) => entry.draft.id === unit.productId)?.draft;
-        const ownerBatch = state.batches.find((item) => item.id === unit.batchId);
-        return [
-          unit.id,
-          unit.productId,
-          owner?.name || "",
-          unit.batchId,
-          ownerBatch?.batchNumber || "",
-          identity?.gtin || "",
-          unit.serial,
-          identity?.canonicalPath || "",
-        ].join(",");
-      }),
-    ];
-    const url = URL.createObjectURL(
-      new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" }),
-    );
-    const anchor = document.createElement("a");
-    anchor.href = url;
-    anchor.download = "demo-unit-labels.csv";
-    anchor.click();
-    URL.revokeObjectURL(url);
   }
   return (
     <>
@@ -1515,119 +1484,230 @@ export function Transparency() {
           </span>
         </section>
       </div>
-      <section className="info-block mt-7">
-        <span className="eyebrow">{t("UNIT IDENTITIES · DEMO")}</span>
-        <h2>{t("Create or import AI (21) serial numbers")}</h2>
-        <p>
-          {t(
-            "The demo checks GTIN check digits, AI (21) syntax and duplicate GTIN + serial combinations. It does not verify GS1 ownership or Amazon enrollment.",
-          )}
-        </p>
-        <div className="flex gap-2 flex-wrap mt-5 items-end">
-          <Field label={t("Product")}>
-            <select
-              className="select-control"
-              value={productId}
-              onChange={(event) => setProductId(event.target.value)}
-            >
-              {state.products.map((entry) => (
-                <option key={entry.draft.id} value={entry.draft.id}>
-                  {entry.draft.name} · {entry.draft.model}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label={t("Batch")}>
-            <select
-              className="select-control"
-              value={batchId}
-              onChange={(event) => setBatchId(event.target.value)}
-            >
-              {batches.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.batchNumber}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <TextField
-            label={t("Serial · 1–20 GS1 characters")}
-            value={serial}
-            onChange={setSerial}
-            placeholder="NH26000129"
-          />
-          <Button onClick={() => createUnits([serial])} disabled={!serial}>
-            <Plus />
-            {t("Create unit")}
-          </Button>
-          <Button variant="outline" asChild>
-            <label>
-              {t("Import CSV")}
-              <input
-                className="sr-only"
-                type="file"
-                accept=".csv,text/csv"
-                onChange={(event) => void importCsv(event.target.files?.[0])}
-              />
-            </label>
-          </Button>
-          <Button variant="outline" onClick={exportLabels}>
-            <ArrowDownToLine />
-            {t("Export label CSV")}
-          </Button>
-        </div>
-      </section>
+      <div className="mt-7 flex flex-wrap gap-3">
+        <Button variant="outline" asChild>
+          <Link to="/admin/products" search={{ tab: "units" }}>
+            <Box />
+            {t("Batches & units")}
+          </Link>
+        </Button>
+        <Button variant="outline" asChild>
+          <Link to="/admin/products" search={{ tab: "links" }}>
+            <QrCode />
+            {t("Digital Links & QR")}
+          </Link>
+        </Button>
+      </div>
       <h2 className="mt-8 mb-5">
         {t("Product identity mappings")}
         <span className="demo-label">{t("DEMO DATA")}</span>
       </h2>
-      <div className="table-wrap">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-5">
+        <Field label={t("Product / model")}>
+          <select
+            className="select-control w-full min-w-0"
+            value={view.filters.productId}
+            onChange={(event) => filter({ productId: event.target.value, batchId: "" })}
+          >
+            <option value="">{t("All products")}</option>
+            {state.products.map(({ draft }) => (
+              <option key={draft.id} value={draft.id}>
+                {draft.name} · {draft.model}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label={t("Production batch")}>
+          <select
+            className="select-control w-full min-w-0"
+            value={view.filters.batchId}
+            onChange={(event) => filter({ batchId: event.target.value })}
+          >
+            <option value="">{t("All batches")}</option>
+            {batches.map((batch) => (
+              <option key={batch.id} value={batch.id}>
+                {batch.batchNumber}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <TextField
+          label={t("Search mappings")}
+          value={view.filters.keyword}
+          onChange={(keyword) => filter({ keyword })}
+          placeholder={t("Product ID, model, SKU, GTIN, unit ID or serial")}
+        />
+        <Field label={t("Official code state")}>
+          <select
+            className="select-control w-full min-w-0"
+            value={view.filters.official}
+            onChange={(event) => filter({ official: event.target.value })}
+          >
+            <option value="">{t("All official code states")}</option>
+            {["Not enrolled", "Amazon-issued code", "Amazon-accepted existing serial"].map(
+              (value) => (
+                <option key={value} value={value}>
+                  {t(value)}
+                </option>
+              ),
+            )}
+          </select>
+        </Field>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 mb-4">
+        <span className="text-sm" aria-live="polite">
+          {t("{count} selected", { count: selected.length })}
+        </span>
+        <Button
+          variant="ghost"
+          onClick={() =>
+            dispatch({ type: "select", ids: rows.map((row) => row.unit.id), checked: true })
+          }
+          disabled={!rows.length}
+        >
+          {t("Select all filtered results")}
+        </Button>
+        <Button
+          variant="ghost"
+          disabled={!selected.length}
+          onClick={() => dispatch({ type: "clear" })}
+        >
+          {t("Clear selection")}
+        </Button>
+        <Button
+          variant="outline"
+          disabled={!selected.length}
+          title={!selected.length ? t("Select mappings to export.") : undefined}
+          onClick={() => exportMappings(true)}
+        >
+          <ArrowDownToLine />
+          {t("Export selected")}
+        </Button>
+        <Button variant="outline" disabled={!rows.length} onClick={() => exportMappings(false)}>
+          <ArrowDownToLine />
+          {t("Export filtered results")}
+        </Button>
+      </div>
+      {!selected.length && (
+        <p className="text-sm text-muted-foreground mb-3">{t("Select mappings to export.")}</p>
+      )}
+      <div className="table-wrap mapping-table">
         <table>
           <thead>
             <tr>
+              <th>
+                <Checkbox
+                  aria-label={t("Select current page")}
+                  disabled={!pageIds.length}
+                  checked={
+                    checkedCount === pageIds.length && pageIds.length > 0
+                      ? true
+                      : checkedCount > 0
+                        ? "indeterminate"
+                        : false
+                  }
+                  onCheckedChange={(checked) =>
+                    dispatch({ type: "select", ids: pageIds, checked: checked === true })
+                  }
+                />
+              </th>
               <th>{t("PRODUCT")}</th>
               <th>{t("UNIQUE ID")}</th>
+              <th>{t("Production batch")}</th>
               <th>ASIN / GTIN</th>
               <th>{t("SKU / BRAND SERIAL")}</th>
               <th>{t("OFFICIAL CODE")}</th>
             </tr>
           </thead>
           <tbody>
-            {state.units
-              .filter((unit) => unit.productId === productId)
-              .map((unit) => {
-                const product = state.products.find((p) => p.draft.id === unit.productId)?.draft;
-                const identity = state.identities.find((item) => item.unitId === unit.id);
-                const association = state.transparency.find((item) => item.unitId === unit.id);
-                return (
-                  <tr key={unit.id}>
-                    <td>{product?.name || "—"}</td>
-                    <td className="table-mono">
-                      {identity ? (
-                        <a className="section-link" href={identity.canonicalPath}>
-                          {unit.id}
-                        </a>
-                      ) : (
-                        unit.id
-                      )}
-                    </td>
-                    <td>
-                      {product?.asin || "—"}
-                      <small>{identity?.gtin || product?.gtin || "—"}</small>
-                    </td>
-                    <td>
-                      {product?.sku || "—"}
-                      <small>{unit.serial}</small>
-                    </td>
-                    <td>
-                      {t(association?.state || "Not enrolled")}
-                      <small>{t(association?.evidence || "Simulated")}</small>
-                    </td>
-                  </tr>
-                );
-              })}
+            {pagination.rows.map(({ unit, product, identity, association, batch, official }) => (
+              <tr key={unit.id}>
+                <td>
+                  <Checkbox
+                    aria-label={t("Select unit {id}", { id: unit.id })}
+                    checked={view.selected.has(unit.id)}
+                    onCheckedChange={(checked) =>
+                      dispatch({ type: "select", ids: [unit.id], checked: checked === true })
+                    }
+                  />
+                </td>
+                <td>
+                  {product?.name || "—"}
+                  <small>{product?.model || "—"}</small>
+                </td>
+                <td className="table-mono">
+                  {identity ? (
+                    <a className="section-link" href={identity.canonicalPath}>
+                      {unit.id}
+                    </a>
+                  ) : (
+                    unit.id
+                  )}
+                </td>
+                <td>{batch?.batchNumber || "—"}</td>
+                <td>
+                  {product?.asin || "—"}
+                  <small>{identity?.gtin || product?.gtin || "—"}</small>
+                </td>
+                <td>
+                  {product?.sku || "—"}
+                  <small>{unit.serial}</small>
+                </td>
+                <td>
+                  {t(official)}
+                  <small>{t(association?.evidence || "Simulated")}</small>
+                </td>
+              </tr>
+            ))}
+            {!rows.length && (
+              <tr>
+                <td colSpan={7}>{t("No matching units.")}</td>
+              </tr>
+            )}
           </tbody>
         </table>
+      </div>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+        <span className="text-sm" aria-live="polite">
+          {t("{count} results · Page {page} of {pages}", {
+            count: rows.length,
+            page: pagination.page,
+            pages: pagination.totalPages,
+          })}
+        </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <Field label={t("Rows per page")}>
+            <select
+              className="select-control"
+              value={view.pageSize}
+              onChange={(event) => dispatch({ type: "size", size: Number(event.target.value) })}
+            >
+              {mappingPageSizes.map((size) => (
+                <option key={size} value={size}>
+                  {size}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Button
+            variant="outline"
+            aria-label={t("Previous page")}
+            title={t("Previous page")}
+            disabled={pagination.page === 1}
+            onClick={() => dispatch({ type: "page", page: pagination.page - 1 })}
+          >
+            <ChevronLeft />
+          </Button>
+          <Button
+            variant="outline"
+            aria-label={t("Next page")}
+            title={t("Next page")}
+            disabled={pagination.page === pagination.totalPages}
+            onClick={() => dispatch({ type: "page", page: pagination.page + 1 })}
+          >
+            <ChevronRight />
+          </Button>
+        </div>
       </div>
     </>
   );

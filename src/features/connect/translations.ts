@@ -1435,6 +1435,76 @@ const adminCopy = {
     zh: "GTIN 与序列号组合重复",
     de: "GTIN + Seriennummer bereits vorhanden",
   },
+  "Product / model": { en: "Product / model", zh: "产品 / 型号", de: "Produkt / Modell" },
+  "All batches": { en: "All batches", zh: "全部批次", de: "Alle Chargen" },
+  "Not enrolled": { en: "Not enrolled", zh: "未加入计划", de: "Nicht angemeldet" },
+  "Amazon-issued code": {
+    en: "Amazon-issued code",
+    zh: "Amazon 发放代码",
+    de: "Von Amazon ausgegebener Code",
+  },
+  "Amazon-accepted existing serial": {
+    en: "Amazon-accepted existing serial",
+    zh: "Amazon 接受的现有序列号",
+    de: "Von Amazon akzeptierte vorhandene Seriennummer",
+  },
+  Simulated: { en: "Simulated", zh: "模拟数据", de: "Simuliert" },
+  Pending: { en: "Pending", zh: "待审核", de: "Ausstehend" },
+  Confirmed: { en: "Confirmed", zh: "已确认依据", de: "Nachweis bestätigt" },
+  "All products": { en: "All products", zh: "全部产品", de: "Alle Produkte" },
+  "Search mappings": { en: "Search mappings", zh: "搜索身份映射", de: "Zuordnungen suchen" },
+  "Product ID, model, SKU, GTIN, unit ID or serial": {
+    en: "Product ID, model, SKU, GTIN, unit ID or serial",
+    zh: "产品 ID、型号、SKU、GTIN、单件 ID 或序列号",
+    de: "Produkt-ID, Modell, SKU, GTIN, Einheiten-ID oder Seriennummer",
+  },
+  "Official code state": {
+    en: "Official code state",
+    zh: "官方码状态",
+    de: "Status des offiziellen Codes",
+  },
+  "All official code states": {
+    en: "All official code states",
+    zh: "全部官方码状态",
+    de: "Alle offiziellen Code-Status",
+  },
+  "{count} selected": { en: "{count} selected", zh: "已选择 {count} 条", de: "{count} ausgewählt" },
+  "Select all filtered results": {
+    en: "Select all filtered results",
+    zh: "选择筛选后的全部结果",
+    de: "Alle gefilterten Ergebnisse auswählen",
+  },
+  "Clear selection": { en: "Clear selection", zh: "清空选择", de: "Auswahl löschen" },
+  "Select mappings to export.": {
+    en: "Select mappings to export.",
+    zh: "请选择要导出的身份映射。",
+    de: "Zuordnungen zum Export auswählen.",
+  },
+  "Export selected": { en: "Export selected", zh: "导出已选择", de: "Auswahl exportieren" },
+  "Export filtered results": {
+    en: "Export filtered results",
+    zh: "导出当前筛选结果",
+    de: "Gefilterte Ergebnisse exportieren",
+  },
+  "Select current page": {
+    en: "Select current page",
+    zh: "选择当前页",
+    de: "Aktuelle Seite auswählen",
+  },
+  "Select unit {id}": { en: "Select unit {id}", zh: "选择单件 {id}", de: "Einheit {id} auswählen" },
+  "{count} results · Page {page} of {pages}": {
+    en: "{count} results · Page {page} of {pages}",
+    zh: "共 {count} 条 · 第 {page} / {pages} 页",
+    de: "{count} Ergebnisse · Seite {page} von {pages}",
+  },
+  "Rows per page": { en: "Rows per page", zh: "每页条数", de: "Zeilen pro Seite" },
+  "Previous page": { en: "Previous page", zh: "上一页", de: "Vorherige Seite" },
+  "Next page": { en: "Next page", zh: "下一页", de: "Nächste Seite" },
+  "Unable to export mappings. Check product, batch and Digital Link configuration.": {
+    en: "Unable to export mappings. Check product, batch and Digital Link configuration.",
+    zh: "无法导出映射，请检查产品、批次及 Digital Link 配置。",
+    de: "Export fehlgeschlagen. Produkt, Charge und Digital-Link-Konfiguration prüfen.",
+  },
 } as const;
 for (const [key, values] of Object.entries(adminCopy)) {
   for (const locale of ["en", "zh", "de"] as const) copy[locale][`admin.${key}`] = values[locale];

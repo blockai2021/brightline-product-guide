@@ -2127,6 +2127,25 @@ td small {
 .unit-table table {
   min-width: 680px;
 }
+.mapping-table table {
+  min-width: 980px;
+  table-layout: fixed;
+}
+.mapping-table th:first-child {
+  width: 44px;
+}
+.mapping-table td {
+  overflow-wrap: anywhere;
+}
+.mapping-table .section-link {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.admin-content .mapping-table button[role="checkbox"] {
+  height: 16px;
+  min-height: 16px;
+  width: 16px;
+}
 .unit-table button {
   min-width: 110px;
   white-space: nowrap;

@@ -24,3 +24,9 @@
 - [x] Batch generation, serial CSV import, scoped CSV export and persistent-unit QR downloads
 - [x] Brand-aware consumer routes with legacy compatibility
 - [x] Verify QR decoding, brand isolation, existing-unit downloads and multilingual mobile flows
+
+# Issue #6 / L-007
+
+- [x] Replace duplicate Transparency creation tools with mapping filters, selection and pagination
+- [x] Export selected or all filtered mappings through existing CSV helpers
+- [x] Verify multilingual mobile layouts, retained links and unchanged identity rules
