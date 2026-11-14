@@ -87,7 +87,12 @@ export function AdminLayout() {
       <div lang={language} className={cn("admin-shell", collapsed && "sidebar-collapsed")}>
         {mobileOpen && <div className="sidebar-scrim" onClick={() => setMobileOpen(false)} />}
         <aside className={cn("admin-sidebar", mobileOpen && "mobile-open")}>
-          <Link to="/admin" className="app-logo" aria-label="Product iCode Connect" title="Product iCode Connect">
+          <Link
+            to="/admin"
+            className="app-logo"
+            aria-label="Product iCode Connect"
+            title="Product iCode Connect"
+          >
             <img
               className="platform-logo-horizontal"
               src="/brand/product-icode/01_Primary_Horizontal.png"
@@ -1758,15 +1763,14 @@ export function Transparency() {
     </>
   );
 }
+// This legacy Connect view is intentionally read-only. Lovable can replace its
+// presentation with DppStatusAdapterV1 without adding DPP writes to Connect.
 export function Dpp() {
-  const { t, language } = useAdminTranslation();
-  const { state, update } = useDemo();
+  const { t } = useAdminTranslation();
+  const { state } = useDemo();
   const [id, setId] = useState(demoProduct.id);
   const entry = state.products.find((p) => p.draft.id === id);
-  const [form, setForm] = useState(entry?.draft || demoProduct);
-  useEffect(() => {
-    if (entry) setForm(entry.draft);
-  }, [id, state.products]);
+  const product = entry?.draft || demoProduct;
   return (
     <>
       <PageHeading
@@ -1807,8 +1811,10 @@ export function Dpp() {
                     ? t("Materials · Demo Data")
                     : t("Manufacturer · Demo Data")
               }
-              value={form[k]}
-              onChange={(v) => setForm({ ...form, [k]: v })}
+              value={product[k]}
+              onChange={() => undefined}
+              readOnly
+              aria-readonly="true"
             />
           ))}
           <div className="flex flex-wrap gap-2">
@@ -1816,27 +1822,9 @@ export function Dpp() {
             <span className="status status-muted">{t("Recyclability · Future field")}</span>
             <span className="status status-muted">{t("EU passport ID · Not assigned")}</span>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={() => {
-                update((s) => saveDraft(s, form));
-                toast.success(t("DPP draft saved"));
-              }}
-            >
-              {t("Save draft")}
-            </Button>
-            <Button
-              onClick={() => {
-                update((s) => publishProduct(saveDraft(s, form), form));
-                toast.success(t("DPP demo information published"));
-              }}
-            >
-              {t("Publish product")}
-            </Button>
-          </div>
         </div>
       </section>
     </>
   );
 }
+
