@@ -38,13 +38,18 @@ import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
 import {
   assertIssuedGtinUnchanged,
+  buildDigitalLinkUri,
+  buildUnitExportCsv,
   createProductUnits,
+  DEMO_DIGITAL_LINK_BASE_URL,
+  generateSerialCandidates,
   publishProduct,
   saveDraft,
   type Campaign,
   type Locale,
   type Product,
 } from "./domain";
+import { createQrArtifacts } from "./digital-link-qr";
 import { cn } from "@/lib/utils";
 import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
 import { translateAdmin } from "./translations";
@@ -1362,6 +1367,26 @@ export function Transparency() {
   const [batchId, setBatchId] = useState(batches[0]?.id || "");
   const product = state.products.find((entry) => entry.draft.id === productId)?.draft;
   const [serial, setSerial] = useState("");
+  const [count, setCount] = useState("10");
+  const [prefix, setPrefix] = useState("NH26");
+  const [start, setStart] = useState("129");
+  const [lastResult, setLastResult] = useState<{
+    created: number;
+    rejected: number;
+    uris: string[];
+  }>();
+  const [qr, setQr] = useState<{ content: string; pngDataUrl: string; svg: string }>();
+  const configuredBaseUrl =
+    import.meta.env["VITE_DIGITAL_LINK_BASE_URL"] || DEMO_DIGITAL_LINK_BASE_URL;
+  let digitalLinkBaseUrl = DEMO_DIGITAL_LINK_BASE_URL;
+  let trustedHosts = [new URL(DEMO_DIGITAL_LINK_BASE_URL).hostname];
+  try {
+    const configured = new URL(configuredBaseUrl);
+    digitalLinkBaseUrl = configured.toString();
+    trustedHosts = [configured.hostname];
+  } catch {
+    // Keep the explicit demo base URL when deployment configuration is malformed.
+  }
   useEffect(() => {
     if (!state.products.some((entry) => entry.draft.id === productId))
       setProductId(state.products[0]?.draft.id || "");
@@ -1369,17 +1394,42 @@ export function Transparency() {
   useEffect(() => {
     if (!batches.some((batch) => batch.id === batchId)) setBatchId(batches[0]?.id || "");
   }, [batchId, batches]);
+  useEffect(() => {
+    const uri = lastResult?.uris[0];
+    if (!uri) {
+      setQr(undefined);
+      return;
+    }
+    void createQrArtifacts(uri)
+      .then(setQr)
+      .catch(() => setQr(undefined));
+  }, [lastResult]);
   function createUnits(serials: string[]) {
     try {
       const result = createProductUnits(state, { productId, batchId, serials });
       if (result.created.length) {
         update(() => result.state);
         setSerial("");
+        const uris = result.created.flatMap((unit) => {
+          const identity = result.state.identities.find((item) => item.unitId === unit.id);
+          return identity
+            ? [
+                buildDigitalLinkUri(
+                  digitalLinkBaseUrl,
+                  identity.gtin,
+                  identity.serial,
+                  trustedHosts,
+                ),
+              ]
+            : [];
+        });
+        setLastResult({ created: result.created.length, rejected: result.rejected.length, uris });
         toast.success(
           t("{count} unit identities created", { count: result.created.length }) +
             (result.rejected.length ? ` · ${result.rejected.length} ${t("rejected")}` : ""),
         );
       } else {
+        setLastResult({ created: 0, rejected: result.rejected.length, uris: [] });
         toast.error(result.rejected.map((item) => item.reason).join(" · "));
       }
     } catch (error) {
@@ -1389,6 +1439,23 @@ export function Transparency() {
           : t("Select a product and one of its batches."),
       );
     }
+  }
+  function generateUnits() {
+    const existing = state.units
+      .filter((unit) => unit.productId === productId)
+      .map((unit) => unit.serial);
+    const generated = generateSerialCandidates({
+      prefix,
+      start: Number(start),
+      count: Number(count),
+      existing,
+    });
+    if (!generated.ok) {
+      setLastResult({ created: 0, rejected: Number(count) || 0, uris: [] });
+      toast.error(generated.message);
+      return;
+    }
+    createUnits(generated.serials);
   }
   async function importCsv(file?: File) {
     if (!file) return;
@@ -1400,33 +1467,30 @@ export function Transparency() {
     createUnits(values.map((row) => row.split(",")[0]?.trim() || ""));
   }
   function exportLabels() {
-    const units = state.units.filter((unit) => unit.productId === productId);
-    const rows = [
-      "unitId,productId,product,batchId,batch,gtin,serial,digitalLink",
-      ...units.map((unit) => {
-        const identity = state.identities.find((item) => item.unitId === unit.id);
-        const owner = state.products.find((entry) => entry.draft.id === unit.productId)?.draft;
-        const ownerBatch = state.batches.find((item) => item.id === unit.batchId);
-        return [
-          unit.id,
-          unit.productId,
-          owner?.name || "",
-          unit.batchId,
-          ownerBatch?.batchNumber || "",
-          identity?.gtin || "",
-          unit.serial,
-          identity?.canonicalPath || "",
-        ].join(",");
-      }),
-    ];
-    const url = URL.createObjectURL(
-      new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" }),
-    );
+    const csv = buildUnitExportCsv(state, {
+      productId,
+      batchId,
+      baseUrl: digitalLinkBaseUrl,
+      trustedHosts,
+    });
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
     const anchor = document.createElement("a");
     anchor.href = url;
     anchor.download = "demo-unit-labels.csv";
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+  function downloadQr(kind: "png" | "svg") {
+    if (!qr) return;
+    const href =
+      kind === "png"
+        ? qr.pngDataUrl
+        : URL.createObjectURL(new Blob([qr.svg], { type: "image/svg+xml;charset=utf-8" }));
+    const anchor = document.createElement("a");
+    anchor.href = href;
+    anchor.download = `demo-unit-qr.${kind}`;
+    anchor.click();
+    if (kind === "svg") URL.revokeObjectURL(href);
   }
   return (
     <>
@@ -1515,6 +1579,13 @@ export function Transparency() {
             <Plus />
             {t("Create unit")}
           </Button>
+          <TextField label={t("Quantity · 1–1000")} value={count} onChange={setCount} />
+          <TextField label={t("Serial prefix")} value={prefix} onChange={setPrefix} />
+          <TextField label={t("Starting number")} value={start} onChange={setStart} />
+          <Button onClick={generateUnits} disabled={!productId || !batchId}>
+            <Plus />
+            {t("Generate batch")}
+          </Button>
           <Button variant="outline" asChild>
             <label>
               {t("Import CSV")}
@@ -1531,6 +1602,41 @@ export function Transparency() {
             {t("Export label CSV")}
           </Button>
         </div>
+        <small className="block mt-3 break-all">
+          {t("Local Demo base URL")}: {digitalLinkBaseUrl}.{" "}
+          {t("Cross-device scanning requires deployment.")}
+        </small>
+        {lastResult && (
+          <div className="mt-4 grid gap-2">
+            <strong>
+              {lastResult.created} {t("created")} · {lastResult.rejected} {t("rejected")}
+            </strong>
+            {lastResult.uris.slice(0, 3).map((uri) => (
+              <a className="section-link break-all" href={uri} key={uri}>
+                {uri}
+              </a>
+            ))}
+            {qr && (
+              <div className="flex gap-3 flex-wrap items-center">
+                <img src={qr.pngDataUrl} width={160} height={160} alt={t("Demo unit QR preview")} />
+                <div className="grid gap-2">
+                  <Button
+                    variant="outline"
+                    onClick={() => void navigator.clipboard.writeText(qr.content)}
+                  >
+                    {t("Copy HTTPS link")}
+                  </Button>
+                  <Button variant="outline" onClick={() => downloadQr("png")}>
+                    {t("Download PNG")}
+                  </Button>
+                  <Button variant="outline" onClick={() => downloadQr("svg")}>
+                    {t("Download SVG")}
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </section>
       <h2 className="mt-8 mb-5">
         {t("Product identity mappings")}
@@ -1669,3 +1775,4 @@ export function Dpp() {
     </>
   );
 }
+
