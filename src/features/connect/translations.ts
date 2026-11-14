@@ -963,6 +963,11 @@ const adminCopy = {
     zh: "产品扫码次数",
     de: "Produkt-Scans",
   },
+  "Cumulative · Demo Data": {
+    en: "Cumulative · Demo Data",
+    zh: "累计 · 演示数据",
+    de: "Kumuliert · Demo-Daten",
+  },
   "Across all digital product pages": {
     en: "Across all digital product pages",
     zh: "所有产品数字页面总计",

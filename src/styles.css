@@ -619,6 +619,7 @@
 }
 .chart-summary {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 9px;
   margin: 20px 0 19px;
@@ -653,17 +654,30 @@
 .chart-plot {
   flex: 1;
   min-width: 0;
+  container-type: inline-size;
 }
 .chart-plot svg {
   height: 143px;
   width: 100%;
 }
 .chart-x {
-  display: flex;
-  justify-content: space-between;
+  position: relative;
+  height: 22px;
   font-size: 8px;
   color: var(--muted-foreground);
   padding-top: 7px;
+}
+.chart-x span {
+  position: absolute;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.chart-x .tick-first { transform: none; }
+.chart-x .tick-last { transform: translateX(-100%); }
+.chart-x-compact { display: none; }
+@container (max-width: 400px) {
+  .chart-x-full { display: none; }
+  .chart-x-compact { display: block; }
 }
 .chart-legend {
   display: flex;

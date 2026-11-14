@@ -54,6 +54,14 @@ import { ProductCatalog } from "./product-catalog";
 import { DppProductSummary, DppStatusPage } from "./dpp-status";
 import { downloadFile } from "./digital-link-qr";
 import {
+  DEMO_SCAN_END,
+  demoDailyScans,
+  scanWindow,
+  scanTicks,
+  scanDateLabel,
+  type ScanRange,
+} from "./dashboard-analytics";
+import {
   buildMappingExportCsv,
   initialMappingView,
   mappingPage,
@@ -290,15 +298,10 @@ export function PageHeading({
     </div>
   );
 }
-const scanPoints = [
-  30, 43, 34, 51, 41, 47, 46, 64, 51, 58, 72, 63, 82, 70, 78, 65, 74, 68, 91, 80, 86, 72, 84, 77,
-  98, 91, 105, 91,
-];
 export function Dashboard() {
   const { t, language } = useAdminTranslation();
   const { state } = useDemo();
-  const [period, setPeriod] = useState("Last 30 days");
-  const [range, setRange] = useState("30 days");
+  const [range, setRange] = useState<ScanRange>(30);
   const published = state.products.filter((p) => p.published).length;
   const metrics = [
     {
@@ -315,7 +318,7 @@ export function Dashboard() {
         language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
       ),
       note: "Across all digital product pages",
-      change: "+18.6%",
+      change: "Cumulative · Demo Data",
       icon: QrCode,
       tone: "blue",
     },
@@ -340,14 +343,12 @@ export function Dashboard() {
       tone: "lavender",
     },
   ];
-  const chart =
-    range === "7 days"
-      ? scanPoints.slice(-7)
-      : range === "90 days"
-        ? [...scanPoints.slice().reverse(), ...scanPoints]
-        : scanPoints;
+  const analytics = scanWindow(demoDailyScans, range, DEMO_SCAN_END);
+  const chart = analytics.current;
+  const numberLocale = language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB";
+  const yMax = Math.max(120, Math.ceil(Math.max(...chart.map((row) => row.scans)) / 40) * 40);
   const points = chart
-    .map((n, i) => `${(i * 700) / (chart.length - 1)},${180 - n * 1.3}`)
+    .map((row, i) => `${(i * 700) / (chart.length - 1)},${180 - (row.scans / yMax) * 160}`)
     .join(" ");
   function exportData() {
     const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -368,17 +369,12 @@ export function Dashboard() {
         <select
           aria-label={t("Reporting period")}
           className="select-control"
-          value={period}
-          onChange={(e) => {
-            setPeriod(e.target.value);
+          value={`Last ${range} days`}
+          onChange={(e) =>
             setRange(
-              e.target.value === "Last 7 days"
-                ? "7 days"
-                : e.target.value === "Last 90 days"
-                  ? "90 days"
-                  : "30 days",
-            );
-          }}
+              e.target.value === "Last 7 days" ? 7 : e.target.value === "Last 90 days" ? 90 : 30,
+            )
+          }
         >
           <option value="Last 30 days">{t("Last 30 days")}</option>
           <option value="Last 7 days">{t("Last 7 days")}</option>
@@ -408,7 +404,6 @@ export function Dashboard() {
               <span
                 className={m.title === "After-sales requests" ? "text-warning" : "text-primary"}
               >
-                {m.title === "Product scans" && <ArrowUpRight size={13} />}
                 {t(m.change)}
               </span>
             </div>
@@ -417,48 +412,44 @@ export function Dashboard() {
         ))}
       </div>
       <div className="dashboard-grid">
-        <section className="chart-panel">
+        <section className="chart-panel" aria-label={t("Product engagement")}>
           <div className="section-head">
             <div>
               <h2>{t("Product engagement")}</h2>
               <p>{t("Scan activity across your digital product pages")}</p>
             </div>
             <div className="segmented">
-              {["7 days", "30 days", "90 days"].map((r) => (
+              {([7, 30, 90] as const).map((r) => (
                 <Button
                   key={r}
                   variant="ghost"
                   size="sm"
                   className={range === r ? "selected" : ""}
-                  onClick={() => {
-                    setRange(r);
-                    setPeriod(`Last ${r}`);
-                  }}
+                  aria-pressed={range === r}
+                  onClick={() => setRange(r)}
                 >
-                  {t(r)}
+                  {t(`${r} days`)}
                 </Button>
               ))}
             </div>
           </div>
           <div className="chart-summary">
-            <strong>
-              {state.visits.toLocaleString(
-                language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
-              )}
-            </strong>
+            <strong>{analytics.total.toLocaleString(numberLocale)}</strong>
             <span className="text-primary">
-              <ArrowUpRight size={14} />
-              18.6%
+              {analytics.changePercent !== null && analytics.changePercent >= 0 && (
+                <ArrowUpRight size={14} />
+              )}
+              {analytics.changePercent === null
+                ? "—"
+                : `${analytics.changePercent >= 0 ? "+" : ""}${analytics.changePercent.toLocaleString(numberLocale, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`}
             </span>
             <small>{t("vs. previous period · Demo Data")}</small>
           </div>
           <div className="scan-chart">
             <div className="chart-y">
-              <span>120</span>
-              <span>90</span>
-              <span>60</span>
-              <span>30</span>
-              <span>0</span>
+              {[1, 0.75, 0.5, 0.25, 0].map((fraction) => (
+                <span key={fraction}>{yMax * fraction}</span>
+              ))}
             </div>
             <div className="chart-plot">
               <svg
@@ -484,7 +475,7 @@ export function Dashboard() {
                     strokeDasharray="4 4"
                   />
                 ))}
-                <polygon points={`0,190 ${points} 700,190`} fill="url(#chart-fill)" />
+                <polygon points={`0,180 ${points} 700,180`} fill="url(#chart-fill)" />
                 <polyline
                   points={points}
                   fill="none"
@@ -492,16 +483,43 @@ export function Dashboard() {
                   strokeWidth="2.5"
                   strokeLinejoin="round"
                 />
+                {chart.map((row, index) => (
+                  <circle
+                    key={row.date}
+                    data-date={row.date}
+                    data-scans={row.scans}
+                    cx={(index * 700) / (chart.length - 1)}
+                    cy={180 - (row.scans / yMax) * 160}
+                    r="2"
+                    fill="var(--primary)"
+                  >
+                    <title>{`${scanDateLabel(row.date, language)}: ${row.scans.toLocaleString(numberLocale)}`}</title>
+                  </circle>
+                ))}
               </svg>
-              <div className="chart-x">
-                <span>{t("Oct 16")}</span>
-                <span>{t("Oct 21")}</span>
-                <span>{t("Oct 26")}</span>
-                <span>{t("Oct 31")}</span>
-                <span>{t("Nov 5")}</span>
-                <span>{t("Nov 10")}</span>
-                <span>{t("Nov 14")}</span>
-              </div>
+              {[false, true].map((compact) => (
+                <div
+                  key={String(compact)}
+                  className={`chart-x ${compact ? "chart-x-compact" : "chart-x-full"}`}
+                >
+                  {scanTicks(chart, compact).map((tick) => (
+                    <span
+                      key={tick.date}
+                      data-date={tick.date}
+                      className={
+                        tick.index === 0
+                          ? "tick-first"
+                          : tick.index === chart.length - 1
+                            ? "tick-last"
+                            : ""
+                      }
+                      style={{ left: `${tick.position * 100}%` }}
+                    >
+                      {scanDateLabel(tick.date, language)}
+                    </span>
+                  ))}
+                </div>
+              ))}
             </div>
           </div>
           <div className="chart-legend">

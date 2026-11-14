@@ -54,3 +54,8 @@
 - [x] Replace DPP legacy fields with a read-only searchable status list using C-008
 - [x] Add safe configured productId links and a shared product-detail summary
 - [x] Verify technical errors, ownership boundaries, multilingual layouts and core regressions
+
+# Issue #24 / L-013
+
+- [x] Replace fixed chart values with dated daily Demo windows and equal-period comparisons
+- [x] Verify 7/30/90-day totals, date ticks, three languages and mobile; deliver screenshots
