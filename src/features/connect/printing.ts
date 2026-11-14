@@ -236,7 +236,12 @@ export function confirmPrintJob(
   now = new Date().toISOString(),
 ): PrintJob {
   if (job.status !== "Exported") throw new PrintingError("state");
-  if (!operator.trim() || !Number.isSafeInteger(actualCount) || actualCount < 0)
+  if (
+    !operator.trim() ||
+    !Number.isSafeInteger(actualCount) ||
+    actualCount < 0 ||
+    actualCount > job.rows.length
+  )
     throw new PrintingError("confirmation");
   return {
     ...job,
@@ -258,3 +263,4 @@ export function pdfSampleRows(job: PrintJob, count: number) {
     throw new PrintingError("pdfLimit");
   return job.rows.slice(0, count);
 }
+
