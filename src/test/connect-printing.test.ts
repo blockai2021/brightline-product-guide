@@ -64,6 +64,7 @@ describe("L-009 browser-local print jobs", () => {
     expect(() => confirmPrintJob(job, "operator", 10, "")).toThrow("state");
     expect(() => confirmPrintJob(exportPrintJob(job), "", 10, "")).toThrow("confirmation");
     expect(() => confirmPrintJob(exportPrintJob(job), "operator", -1, "")).toThrow("confirmation");
+    expect(() => confirmPrintJob(exportPrintJob(job), "operator", 11, "")).toThrow("confirmation");
     const confirmed = confirmPrintJob(
       exportPrintJob(job),
       "operator",
@@ -151,3 +152,4 @@ describe("L-009 browser-local print jobs", () => {
     expect(() => pdfSampleRows(setup(10).job, 11)).toThrow("pdfLimit");
   });
 });
+
