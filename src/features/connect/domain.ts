@@ -109,6 +109,19 @@ export type CreateProductUnitsResult = {
   created: ProductUnit[];
   rejected: UnitInputRejection[];
 };
+export type GenerateSerialCandidatesResult =
+  | { ok: true; serials: string[] }
+  | {
+      ok: false;
+      code:
+        | "INVALID_PREFIX"
+        | "INVALID_START"
+        | "INVALID_COUNT"
+        | "SERIAL_OVERFLOW"
+        | "DUPLICATE_SERIAL";
+      message: string;
+    };
+export const DEMO_DIGITAL_LINK_BASE_URL = "https://demo.icodeconnect.example";
 export class UnitIdentityError extends Error {
   constructor(
     readonly code:
@@ -144,6 +157,117 @@ export function buildDigitalLinkPath(gtin: string, serial: string) {
   const normalized = normalizeGtin14(gtin);
   if (!normalized) throw new Error("Invalid GTIN");
   return `/01/${normalized}/21/${encodeGs1PathSegment(serial)}`;
+}
+export function buildDigitalLinkUri(
+  baseUrl: string,
+  gtin: string,
+  serial: string,
+  trustedHosts: readonly string[] = [new URL(DEMO_DIGITAL_LINK_BASE_URL).hostname],
+) {
+  const base = new URL(baseUrl);
+  if (
+    base.protocol !== "https:" ||
+    base.username ||
+    base.password ||
+    base.pathname !== "/" ||
+    base.search ||
+    base.hash ||
+    !trustedHosts.includes(base.hostname)
+  ) {
+    throw new Error("Untrusted Digital Link base URL");
+  }
+  return new URL(buildDigitalLinkPath(gtin, serial), base.origin).toString();
+}
+export function generateSerialCandidates(input: {
+  prefix: string;
+  start: number;
+  count: number;
+  existing?: Iterable<string>;
+  width?: number;
+  maxCount?: number;
+}): GenerateSerialCandidatesResult {
+  const width = input.width ?? 6;
+  const maxCount = input.maxCount ?? 1000;
+  if (input.prefix && !isValidAi21Serial(input.prefix))
+    return {
+      ok: false,
+      code: "INVALID_PREFIX",
+      message: "Prefix contains invalid AI (21) characters.",
+    };
+  if (!Number.isSafeInteger(input.start) || input.start < 0)
+    return { ok: false, code: "INVALID_START", message: "Start must be a non-negative integer." };
+  if (!Number.isSafeInteger(input.count) || input.count < 1 || input.count > maxCount)
+    return {
+      ok: false,
+      code: "INVALID_COUNT",
+      message: `Count must be between 1 and ${maxCount}.`,
+    };
+  if (!Number.isSafeInteger(width) || width < 1 || width > 20)
+    return { ok: false, code: "SERIAL_OVERFLOW", message: "Serial width is invalid." };
+  const last = input.start + input.count - 1;
+  if (
+    !Number.isSafeInteger(last) ||
+    String(last).length > width ||
+    input.prefix.length + width > 20
+  )
+    return {
+      ok: false,
+      code: "SERIAL_OVERFLOW",
+      message: "Generated serials exceed the configured width or AI (21) limit.",
+    };
+  const serials = Array.from(
+    { length: input.count },
+    (_, index) => `${input.prefix}${String(input.start + index).padStart(width, "0")}`,
+  );
+  if (serials.some((serial) => !isValidAi21Serial(serial)))
+    return {
+      ok: false,
+      code: "SERIAL_OVERFLOW",
+      message: "Generated serials are not valid AI (21) values.",
+    };
+  const existing = new Set(input.existing || []);
+  const duplicate = serials.find((serial) => existing.has(serial));
+  if (duplicate)
+    return { ok: false, code: "DUPLICATE_SERIAL", message: `Serial already exists: ${duplicate}` };
+  return { ok: true, serials };
+}
+function csvCell(value: string) {
+  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
+  return `"${safe.replace(/"/g, '""')}"`;
+}
+export function buildUnitExportCsv(
+  state: DemoState,
+  input: {
+    productId: string;
+    batchId: string;
+    baseUrl: string;
+    trustedHosts?: readonly string[];
+  },
+) {
+  const product = state.products.find((entry) => entry.draft.id === input.productId)?.draft;
+  const batch = state.batches.find(
+    (entry) => entry.id === input.batchId && entry.productId === input.productId,
+  );
+  if (!product || !batch) throw new Error("Invalid product or batch export scope");
+  const rows = state.units
+    .filter((unit) => unit.productId === product.id && unit.batchId === batch.id)
+    .map((unit) => {
+      const identity = state.identities.find((entry) => entry.unitId === unit.id);
+      if (!identity) return null;
+      return [
+        product.id,
+        product.sku,
+        batch.id,
+        batch.batchNumber,
+        identity.gtin,
+        identity.serial,
+        buildDigitalLinkUri(input.baseUrl, identity.gtin, identity.serial, input.trustedHosts),
+      ]
+        .map(csvCell)
+        .join(",");
+    })
+    .filter((row): row is string => Boolean(row));
+  return ["productId,SKU,batchId,batch,GTIN,serial,absoluteUri", ...rows].join("\r\n");
 }
 export function findUnitByIdentity(state: DemoState, gtin: string, serial: string) {
   const normalized = normalizeGtin14(gtin);
@@ -301,3 +425,4 @@ export function setConsent(state: DemoState, email: string, active: boolean): De
     ],
   };
 }
+
