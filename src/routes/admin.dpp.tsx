@@ -6,6 +6,6 @@ export const Route = createFileRoute("/admin/dpp")({
   head: () =>
     pageMeta(
       "DPP Ready",
-      "Demonstration of future product passport information; not statutory compliance.",
+      "Read-only product DPP status and independent platform links. Browser-local demo; not EU compliance certification.",
     ),
 });

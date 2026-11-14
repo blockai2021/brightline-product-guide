@@ -51,6 +51,7 @@ import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./langu
 import { translateAdmin } from "./translations";
 import { ProductUnits } from "./product-units";
 import { ProductCatalog } from "./product-catalog";
+import { DppProductSummary, DppStatusPage } from "./dpp-status";
 import { downloadFile } from "./digital-link-qr";
 import {
   buildMappingExportCsv,
@@ -929,6 +930,7 @@ export function Products({
               )}
             </div>
           </div>
+          {!catalog && <DppProductSummary productId={form.id} />}
           <Tabs
             value={tab}
             onValueChange={(value) => {
@@ -1763,68 +1765,7 @@ export function Transparency() {
     </>
   );
 }
-// This legacy Connect view is intentionally read-only. Lovable can replace its
-// presentation with DppStatusAdapterV1 without adding DPP writes to Connect.
 export function Dpp() {
-  const { t } = useAdminTranslation();
-  const { state } = useDemo();
-  const [id, setId] = useState(demoProduct.id);
-  const entry = state.products.find((p) => p.draft.id === id);
-  const product = entry?.draft || demoProduct;
-  return (
-    <>
-      <PageHeading
-        title={t("DPP Ready")}
-        subtitle={t("Organize today’s product data for tomorrow’s transparency.")}
-      />
-      <DemoNotice
-        text={t(
-          "DPP Ready is a demonstration of future product passport fields. It does not represent compliance with statutory EU Digital Product Passport requirements.",
-        )}
-      />
-      <div className="dpp-heading">
-        <Leaf size={34} />
-        <div>
-          <h2>{t("Product information, thoughtfully connected.")}</h2>
-          <p>{t("Materials, manufacturer and technical specifications in one place.")}</p>
-        </div>
-        <span className="demo-label">{t("DEMO DATA")}</span>
-      </div>
-      <section className="editor max-w-3xl">
-        <Field label={t("Product")}>
-          <select className="select-control" value={id} onChange={(e) => setId(e.target.value)}>
-            {state.products.map((p) => (
-              <option key={p.draft.id} value={p.draft.id}>
-                {p.draft.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-        <div className="grid gap-5 mt-6">
-          {(["manufacturer", "materials", "specs"] as const).map((k) => (
-            <TextField
-              key={k}
-              label={
-                k === "specs"
-                  ? t("Technical specifications")
-                  : k === "materials"
-                    ? t("Materials · Demo Data")
-                    : t("Manufacturer · Demo Data")
-              }
-              value={product[k]}
-              onChange={() => undefined}
-              readOnly
-              aria-readonly="true"
-            />
-          ))}
-          <div className="flex flex-wrap gap-2">
-            <span className="status status-muted">{t("Carbon footprint · Future field")}</span>
-            <span className="status status-muted">{t("Recyclability · Future field")}</span>
-            <span className="status status-muted">{t("EU passport ID · Not assigned")}</span>
-          </div>
-        </div>
-      </section>
-    </>
-  );
+  return <DppStatusPage />;
 }
 

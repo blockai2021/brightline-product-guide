@@ -2451,6 +2451,40 @@ td small {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 32px;
 }
+.dpp-boundary {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 0;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.dpp-boundary svg { flex-shrink: 0; margin-top: 3px; }
+.dpp-filters { display: grid; grid-template-columns: minmax(0, 2fr) minmax(180px, 1fr); gap: 18px; margin: 22px 0; }
+.dpp-table table { min-width: 900px; }
+.dpp-table td { white-space: normal; overflow-wrap: anywhere; }
+.dpp-table td:first-child { min-width: 180px; }
+.dpp-product-id, .dpp-error-detail { display: block; color: var(--muted-foreground); font-size: 11px; margin-top: 6px; }
+.dpp-action { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 155px; max-width: 230px; }
+.dpp-action small { font-size: 11px; line-height: 1.5; color: var(--muted-foreground); }
+.dpp-action button, .dpp-action a { white-space: normal; height: auto; min-height: 32px; }
+.dpp-product-summary { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 16px 0; margin: 0 0 20px; }
+.dpp-product-summary p { font-size: 12px; line-height: 1.6; color: var(--muted-foreground); margin: 8px 0 12px; }
+@media (max-width: 700px) {
+  .dpp-filters { grid-template-columns: minmax(0, 1fr); }
+  .dpp-page .page-heading { flex-wrap: wrap; gap: 12px; }
+  .dpp-table table { min-width: 0; width: 100%; }
+  .dpp-table thead { display: none; }
+  .dpp-table tbody, .dpp-table tr { display: block; }
+  .dpp-table tr { padding: 14px; border-bottom: 1px solid var(--border); }
+  .dpp-table tr:last-child { border-bottom: 0; }
+  .dpp-table td { display: block; min-width: 0; padding: 7px 0; border: 0; }
+  .dpp-table td:nth-child(2)::before { content: "SKU · "; color: var(--muted-foreground); }
+  .dpp-table td:nth-child(3)::before { content: "GTIN · "; color: var(--muted-foreground); }
+  .dpp-table td:nth-child(5) { color: var(--muted-foreground); }
+}
 @media (max-width: 700px) {
   .print-filters,
   .print-confirm-grid {

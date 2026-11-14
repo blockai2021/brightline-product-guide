@@ -48,3 +48,9 @@
 - [x] Commit five byte-identical original PNGs separately from UI changes
 - [x] Use horizontal admin logo, collapsed icon and source-derived favicon
 - [x] Verify desktop/mobile/collapsed navigation, favicon and unchanged consumer brand; deliver before/after screenshots
+
+# Issue #22 / L-012
+
+- [x] Replace DPP legacy fields with a read-only searchable status list using C-008
+- [x] Add safe configured productId links and a shared product-detail summary
+- [x] Verify technical errors, ownership boundaries, multilingual layouts and core regressions
