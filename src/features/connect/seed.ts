@@ -1,0 +1,139 @@
+import purifierImage from "@/assets/airpure-studio.jpg";
+import type { DemoState, Product } from "./domain";
+export { purifierImage };
+export const demoProduct: Product = {
+  id: "demo-prod-airpure-001",
+  slug: "airpure-mini",
+  name: "AirPure Mini",
+  brand: "NOVA Home",
+  model: "APM-100",
+  sku: "DE-APM-001",
+  gtin: "DEMO-04012345678901",
+  asin: "DEMO-B0NOVA001",
+  serial: "DEMO-NH-2026-000128",
+  image: purifierImage,
+  description: {
+    en: "A little quieter. A lot fresher. Meet your everyday companion for cleaner air, thoughtfully designed for your home.",
+    de: "Ein wenig leiser. Viel frischer. Ihr täglicher Begleiter für saubere Luft – durchdacht für Ihr Zuhause.",
+    zh: "更安静，更清新。为您的家精心设计，让洁净空气融入每一天。",
+  },
+  manual: {
+    en: "Place the purifier on a flat surface. Remove the filter packaging before use. Connect power and press the power button. Clean the pre-filter monthly; replace the HEPA filter every 6 months. Demo instructions only.",
+    de: "Auf eine ebene Fläche stellen. Filterverpackung vor Gebrauch entfernen. Anschließen und einschalten. Vorfilter monatlich reinigen; HEPA-Filter alle 6 Monate wechseln. Nur Demo-Anleitung.",
+    zh: "将净化器放在平稳表面，使用前移除滤芯包装。连接电源并按下电源键。每月清洁预滤网，每 6 个月更换 HEPA 滤芯。仅为演示说明。",
+  },
+  faq: {
+    en: "How often should I replace the filter? Every 6 months in typical conditions.\nCan I use it at night? Yes, sleep mode reduces fan noise.\nWhat room size is suitable? Up to 25 m² in this demo specification.",
+    de: "Wie oft muss der Filter gewechselt werden? Alle 6 Monate bei normaler Nutzung.\nKann ich ihn nachts verwenden? Ja, der Schlafmodus reduziert die Geräusche.\nWelche Raumgröße ist geeignet? Bis 25 m² laut Demo-Spezifikation.",
+    zh: "多久更换滤芯？正常使用条件下每 6 个月更换。\n夜间可以使用吗？可以，睡眠模式降低风扇噪音。\n适合多大房间？演示规格为 25 平方米以内。",
+  },
+  video: "",
+  manufacturer: "NOVA Home Technologies · Demo manufacturer",
+  materials: "ABS housing · Aluminum motor · HEPA H13 filter · Demo Data",
+  specs: "25 m² · 24 W · 22–48 dB · 220–240 V · Demo Data",
+  publishedAt: "2026-11-12T10:00:00Z",
+};
+export function initialState(): DemoState {
+  return {
+    products: [{ draft: structuredClone(demoProduct), published: structuredClone(demoProduct) }],
+    visits: 1248,
+    campaigns: [
+      {
+        id: "demo-event-berlin",
+        title: {
+          en: "A breath of fresh air, Berlin",
+          de: "Frische Luft für Berlin",
+          zh: "柏林 · 清新生活相聚",
+        },
+        city: "Berlin, Germany",
+        date: "2026-12-06",
+        description: {
+          en: "Join the NOVA Home community for a relaxed morning of smart-home conversations and a hands-on AirPure experience. Demo event.",
+          de: "Ein entspannter Vormittag mit der NOVA Home Community und AirPure zum Ausprobieren. Demo-Veranstaltung.",
+          zh: "与 NOVA Home 社区共度轻松上午，交流智能家居并体验 AirPure。演示活动。",
+        },
+        status: "Published",
+      },
+      {
+        id: "demo-event-munich",
+        title: {
+          en: "Small spaces, better living",
+          de: "Kleine Räume, besser leben",
+          zh: "慕尼黑 · 小空间好生活",
+        },
+        city: "Munich, Germany",
+        date: "2026-12-13",
+        description: {
+          en: "Discover simple ideas for healthier homes. Demo event.",
+          de: "Einfache Ideen für ein gesünderes Zuhause. Demo-Veranstaltung.",
+          zh: "发现更健康居家的简单灵感。演示活动。",
+        },
+        status: "Draft",
+      },
+      {
+        id: "demo-event-hamburg",
+        title: {
+          en: "NOVA Home community meetup",
+          de: "NOVA Home Community-Treffen",
+          zh: "NOVA Home 社区见面会",
+        },
+        city: "Hamburg, Germany",
+        date: "2026-11-01",
+        description: {
+          en: "Our previous community gathering. Demo event.",
+          de: "Unser vergangenes Community-Treffen. Demo-Veranstaltung.",
+          zh: "往期社区相聚。演示活动。",
+        },
+        status: "Closed",
+      },
+    ],
+    records: [
+      {
+        id: "DEMO-1042",
+        productId: demoProduct.id,
+        name: "Demo · Alex M.",
+        email: "alex@example.test",
+        serial: demoProduct.serial,
+        date: "2026-11-14",
+        kind: "Support",
+        details: "Filter replacement question",
+        status: "New",
+      },
+      {
+        id: "DEMO-1041",
+        productId: demoProduct.id,
+        name: "Demo · Emma K.",
+        email: "emma@example.test",
+        serial: "DEMO-NH-2026-000125",
+        date: "2026-11-13",
+        kind: "Warranty",
+        details: "Purchase date: 2026-11-10",
+        status: "New",
+      },
+      {
+        id: "DEMO-1040",
+        productId: demoProduct.id,
+        name: "Demo · Leon S.",
+        email: "leon@example.test",
+        serial: "DEMO-NH-2026-000120",
+        date: "2026-11-13",
+        kind: "Event",
+        details: "A breath of fresh air, Berlin",
+        eventId: "demo-event-berlin",
+        status: "New",
+      },
+      {
+        id: "DEMO-1039",
+        productId: demoProduct.id,
+        name: "Demo · Mia W.",
+        email: "mia@example.test",
+        serial: "DEMO-NH-2026-000119",
+        date: "2026-11-12",
+        kind: "Support",
+        details: "Getting started with sleep mode",
+        status: "Resolved",
+      },
+    ],
+    consents: [{ email: "leon@example.test", active: true, updatedAt: "2026-11-13T10:00:00Z" }],
+  };
+}

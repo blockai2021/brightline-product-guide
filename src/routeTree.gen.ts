@@ -10,33 +10,145 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
+import { Route as AdminAfterSalesRouteImport } from './routes/admin.after-sales'
+import { Route as AdminContentRouteImport } from './routes/admin.content'
+import { Route as AdminDppRouteImport } from './routes/admin.dpp'
+import { Route as AdminMarketingRouteImport } from './routes/admin.marketing'
+import { Route as AdminProductsRouteImport } from './routes/admin.products'
+import { Route as AdminTransparencyRouteImport } from './routes/admin.transparency'
+import { Route as PSlugRouteImport } from './routes/p.$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminAfterSalesRoute = AdminAfterSalesRouteImport.update({
+  id: '/after-sales',
+  path: '/after-sales',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminContentRoute = AdminContentRouteImport.update({
+  id: '/content',
+  path: '/content',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminDppRoute = AdminDppRouteImport.update({
+  id: '/dpp',
+  path: '/dpp',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminMarketingRoute = AdminMarketingRouteImport.update({
+  id: '/marketing',
+  path: '/marketing',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProductsRoute = AdminProductsRouteImport.update({
+  id: '/products',
+  path: '/products',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminTransparencyRoute = AdminTransparencyRouteImport.update({
+  id: '/transparency',
+  path: '/transparency',
+  getParentRoute: () => AdminRoute,
+} as any)
+const PSlugRoute = PSlugRouteImport.update({
+  id: '/p/$slug',
+  path: '/p/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/after-sales': typeof AdminAfterSalesRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/dpp': typeof AdminDppRoute
+  '/admin/marketing': typeof AdminMarketingRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/transparency': typeof AdminTransparencyRoute
+  '/p/$slug': typeof PSlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/admin/after-sales': typeof AdminAfterSalesRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/dpp': typeof AdminDppRoute
+  '/admin/marketing': typeof AdminMarketingRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/transparency': typeof AdminTransparencyRoute
+  '/p/$slug': typeof PSlugRoute
+  '/admin': typeof AdminIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/admin': typeof AdminRouteWithChildren
+  '/admin/after-sales': typeof AdminAfterSalesRoute
+  '/admin/content': typeof AdminContentRoute
+  '/admin/dpp': typeof AdminDppRoute
+  '/admin/marketing': typeof AdminMarketingRoute
+  '/admin/products': typeof AdminProductsRoute
+  '/admin/transparency': typeof AdminTransparencyRoute
+  '/p/$slug': typeof PSlugRoute
+  '/admin/': typeof AdminIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/admin'
+    | '/admin/after-sales'
+    | '/admin/content'
+    | '/admin/dpp'
+    | '/admin/marketing'
+    | '/admin/products'
+    | '/admin/transparency'
+    | '/p/$slug'
+    | '/admin/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/admin/after-sales'
+    | '/admin/content'
+    | '/admin/dpp'
+    | '/admin/marketing'
+    | '/admin/products'
+    | '/admin/transparency'
+    | '/p/$slug'
+    | '/admin'
+  id:
+    | '__root__'
+    | '/'
+    | '/admin'
+    | '/admin/after-sales'
+    | '/admin/content'
+    | '/admin/dpp'
+    | '/admin/marketing'
+    | '/admin/products'
+    | '/admin/transparency'
+    | '/p/$slug'
+    | '/admin/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AdminRoute: typeof AdminRouteWithChildren
+  PSlugRoute: typeof PSlugRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +160,98 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/after-sales': {
+      id: '/admin/after-sales'
+      path: '/after-sales'
+      fullPath: '/admin/after-sales'
+      preLoaderRoute: typeof AdminAfterSalesRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/content': {
+      id: '/admin/content'
+      path: '/content'
+      fullPath: '/admin/content'
+      preLoaderRoute: typeof AdminContentRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/dpp': {
+      id: '/admin/dpp'
+      path: '/dpp'
+      fullPath: '/admin/dpp'
+      preLoaderRoute: typeof AdminDppRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/marketing': {
+      id: '/admin/marketing'
+      path: '/marketing'
+      fullPath: '/admin/marketing'
+      preLoaderRoute: typeof AdminMarketingRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/products': {
+      id: '/admin/products'
+      path: '/products'
+      fullPath: '/admin/products'
+      preLoaderRoute: typeof AdminProductsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/admin/transparency': {
+      id: '/admin/transparency'
+      path: '/transparency'
+      fullPath: '/admin/transparency'
+      preLoaderRoute: typeof AdminTransparencyRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/p/$slug': {
+      id: '/p/$slug'
+      path: '/p/$slug'
+      fullPath: '/p/$slug'
+      preLoaderRoute: typeof PSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
+interface AdminRouteChildren {
+  AdminAfterSalesRoute: typeof AdminAfterSalesRoute
+  AdminContentRoute: typeof AdminContentRoute
+  AdminDppRoute: typeof AdminDppRoute
+  AdminMarketingRoute: typeof AdminMarketingRoute
+  AdminProductsRoute: typeof AdminProductsRoute
+  AdminTransparencyRoute: typeof AdminTransparencyRoute
+  AdminIndexRoute: typeof AdminIndexRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminAfterSalesRoute: AdminAfterSalesRoute,
+  AdminContentRoute: AdminContentRoute,
+  AdminDppRoute: AdminDppRoute,
+  AdminMarketingRoute: AdminMarketingRoute,
+  AdminProductsRoute: AdminProductsRoute,
+  AdminTransparencyRoute: AdminTransparencyRoute,
+  AdminIndexRoute: AdminIndexRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AdminRoute: AdminRouteWithChildren,
+  PSlugRoute: PSlugRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
