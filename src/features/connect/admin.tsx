@@ -37,6 +37,8 @@ import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
 import { publishProduct, saveDraft, type Campaign, type Locale, type Product } from "./domain";
 import { cn } from "@/lib/utils";
+import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
+import { translateAdmin } from "./translations";
 const nav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Products", path: "/admin/products", icon: Box },
@@ -47,6 +49,8 @@ const nav = [
   { label: "DPP Ready", path: "/admin/dpp", icon: Leaf },
 ] as const;
 export function AdminLayout() {
+  const [language, setLanguage] = useLanguage("admin");
+  const t = (key: string) => translateAdmin(language, key);
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [noticeOpen, setNoticeOpen] = useState(false);
@@ -55,159 +59,180 @@ export function AdminLayout() {
   const { state } = useDemo();
   const current = nav.find((n) => n.path === path)?.label || "Dashboard";
   return (
-    <div className={cn("admin-shell", collapsed && "sidebar-collapsed")}>
-      {mobileOpen && <div className="sidebar-scrim" onClick={() => setMobileOpen(false)} />}
-      <aside className={cn("admin-sidebar", mobileOpen && "mobile-open")}>
-        <Link to="/admin" className="app-logo">
-          <span className="logo-symbol">
-            <QrCode size={21} />
-          </span>
-          <span className="sidebar-text">
-            iCode<span className="font-normal"> Connect</span>
-            <small>PRODUCT EXPERIENCE PLATFORM</small>
-          </span>
-        </Link>
-        <div className="workspace">
-          <span className="brand-avatar">N</span>
-          <div className="sidebar-text">
-            <strong>NOVA Home</strong>
-            <small>Demo workspace</small>
-          </div>
-          <ChevronDown size={15} className="sidebar-text ml-auto" />
-        </div>
-        <p className="nav-caption sidebar-text">WORKSPACE</p>
-        <nav>
-          {nav.map((n) => (
-            <Link
-              key={n.path}
-              to={n.path}
-              title={n.label}
-              onClick={() => setMobileOpen(false)}
-              className={cn("nav-item", path === n.path && "active")}
-            >
-              <n.icon size={18} />
-              <span className="sidebar-text">{n.label}</span>
-              {n.label === "DPP Ready" && <span className="sidebar-text nav-soon">DEMO</span>}
-              {n.label === "After-sales" && (
-                <span className="sidebar-text nav-count">
-                  {
-                    state.records.filter((r) => r.kind === "Support" && r.status !== "Resolved")
-                      .length
-                  }
-                </span>
-              )}
-            </Link>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="sandbox-box sidebar-text">
-            <span>
-              <Sparkles size={15} /> Your demo workspace
+    <AdminLanguageProvider language={language}>
+      <div lang={language} className={cn("admin-shell", collapsed && "sidebar-collapsed")}>
+        {mobileOpen && <div className="sidebar-scrim" onClick={() => setMobileOpen(false)} />}
+        <aside className={cn("admin-sidebar", mobileOpen && "mobile-open")}>
+          <Link to="/admin" className="app-logo">
+            <span className="logo-symbol">
+              <QrCode size={21} />
             </span>
-            <p>Explore a connected product journey.</p>
-            <Button variant="outline" size="sm" asChild className="w-full">
-              <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
-                Open consumer experience <ArrowUpRight />
-              </Link>
-            </Button>
-          </div>
-          <Button
-            variant="ghost"
-            onClick={() => setHelp(true)}
-            className="nav-item w-full justify-start"
-          >
-            <CircleHelp />
-            <span className="sidebar-text">Help & resources</span>
-            <ExternalLink className="sidebar-text ml-auto" />
-          </Button>
-          <div className="profile">
-            <span className="profile-avatar">JD</span>
+            <span className="sidebar-text">
+              iCode<span className="font-normal"> Connect</span>
+              <small>{t("PRODUCT EXPERIENCE PLATFORM")}</small>
+            </span>
+          </Link>
+          <div className="workspace">
+            <span className="brand-avatar">N</span>
             <div className="sidebar-text">
-              <strong>Demo Administrator</strong>
-              <small>Workspace owner</small>
+              <strong>NOVA Home</strong>
+              <small>{t("Demo workspace")}</small>
             </div>
-            <span className="sidebar-text ml-auto">
-              <MoreHorizontal size={17} />
-            </span>
+            <ChevronDown size={15} className="sidebar-text ml-auto" />
           </div>
-        </div>
-      </aside>
-      <div className="admin-main">
-        <header className="admin-topbar">
-          <div className="flex items-center gap-3">
-            <Button
-              size="icon"
-              variant="ghost"
-              title="Toggle navigation"
-              aria-label="Toggle navigation"
-              onClick={() => {
-                if (window.innerWidth < 900) setMobileOpen(!mobileOpen);
-                else setCollapsed(!collapsed);
-              }}
-            >
-              <Menu />
-            </Button>
-            <span className="text-muted-foreground hidden sm:inline">Workspace</span>
-            <ChevronRight size={14} className="text-muted-foreground hidden sm:inline" />
-            <span className="text-sm font-medium">{current}</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="environment">
-              <span /> Demo environment
-            </span>
-            <Button variant="outline" size="sm" asChild className="consumer-link">
-              <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
-                <ExternalLink /> Consumer view
-              </Link>
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              aria-label="Notifications"
-              onClick={() => setNoticeOpen(!noticeOpen)}
-              className="relative"
-            >
-              <Bell />
-              <span className="notification-dot" />
-            </Button>
-            <span className="top-avatar">JD</span>
-          </div>
-          {noticeOpen && (
-            <div className="notifications">
-              <strong>Recent activity · Demo Data</strong>
-              {state.records.slice(0, 3).map((r) => (
-                <div key={r.id}>
-                  <span>
-                    {r.kind} · {r.name}
+          <p className="nav-caption sidebar-text">{t("WORKSPACE")}</p>
+          <nav>
+            {nav.map((n) => (
+              <Link
+                key={n.path}
+                to={n.path}
+                title={t(n.label)}
+                onClick={() => setMobileOpen(false)}
+                className={cn("nav-item", path === n.path && "active")}
+              >
+                <n.icon size={18} />
+                <span className="sidebar-text">{t(n.label)}</span>
+                {n.label === "DPP Ready" && (
+                  <span className="sidebar-text nav-soon">{t("DEMO")}</span>
+                )}
+                {n.label === "After-sales" && (
+                  <span className="sidebar-text nav-count">
+                    {
+                      state.records.filter((r) => r.kind === "Support" && r.status !== "Resolved")
+                        .length
+                    }
                   </span>
-                  <small>{r.details}</small>
-                </div>
-              ))}
+                )}
+              </Link>
+            ))}
+          </nav>
+          <div className="sidebar-bottom">
+            <div className="sandbox-box sidebar-text">
+              <span>
+                <Sparkles size={15} />
+                {t("Your demo workspace")}
+              </span>
+              <p>{t("Explore a connected product journey.")}</p>
+              <Button variant="outline" size="sm" asChild className="w-full">
+                <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
+                  {t("Open consumer experience")}
+                  <ArrowUpRight />
+                </Link>
+              </Button>
             </div>
-          )}
-        </header>
-        <main className="admin-content">
-          <Outlet />
-        </main>
-        <footer className="admin-footer">
-          <span>© 2026 Product iCode Connect</span>
-          <span>
-            Germany & European Union <Globe2 size={13} />
-          </span>
-        </footer>
+            <Button
+              variant="ghost"
+              onClick={() => setHelp(true)}
+              className="nav-item w-full justify-start"
+            >
+              <CircleHelp />
+              <span className="sidebar-text">{t("Help & resources")}</span>
+              <ExternalLink className="sidebar-text ml-auto" />
+            </Button>
+            <div className="profile">
+              <span className="profile-avatar">JD</span>
+              <div className="sidebar-text">
+                <strong>{t("Demo Administrator")}</strong>
+                <small>{t("Workspace owner")}</small>
+              </div>
+              <span className="sidebar-text ml-auto">
+                <MoreHorizontal size={17} />
+              </span>
+            </div>
+          </div>
+        </aside>
+        <div className="admin-main">
+          <header className="admin-topbar">
+            <div className="flex items-center gap-3">
+              <Button
+                size="icon"
+                variant="ghost"
+                title={t("Toggle navigation")}
+                aria-label={t("Toggle navigation")}
+                onClick={() => {
+                  if (window.innerWidth < 900) setMobileOpen(!mobileOpen);
+                  else setCollapsed(!collapsed);
+                }}
+              >
+                <Menu />
+              </Button>
+              <span className="text-muted-foreground hidden sm:inline">{t("Workspace")}</span>
+              <ChevronRight size={14} className="text-muted-foreground hidden sm:inline" />
+              <span className="text-sm font-medium">{t(current)}</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <label className="language-picker admin-language-picker">
+                <Globe2 size={16} />
+                <select
+                  aria-label={t("Language")}
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value as Locale)}
+                >
+                  <option value="zh">ZH</option>
+                  <option value="en">EN</option>
+                  <option value="de">DE</option>
+                </select>
+              </label>
+              <span className="environment">
+                <span />
+                {t("Demo environment")}
+              </span>
+              <Button variant="outline" size="sm" asChild className="consumer-link">
+                <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
+                  <ExternalLink />
+                  {t("Consumer view")}
+                </Link>
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label={t("Notifications")}
+                onClick={() => setNoticeOpen(!noticeOpen)}
+                className="relative"
+              >
+                <Bell />
+                <span className="notification-dot" />
+              </Button>
+              <span className="top-avatar">JD</span>
+            </div>
+            {noticeOpen && (
+              <div className="notifications">
+                <strong>{t("Recent activity · Demo Data")}</strong>
+                {state.records.slice(0, 3).map((r) => (
+                  <div key={r.id}>
+                    <span>
+                      {t(r.kind)} · {r.name}
+                    </span>
+                    <small>{r.details}</small>
+                  </div>
+                ))}
+              </div>
+            )}
+          </header>
+          <main className="admin-content">
+            <Outlet />
+          </main>
+          <footer className="admin-footer">
+            <span>© 2026 Product iCode Connect</span>
+            <span>
+              {t("Germany & European Union")}
+              <Globe2 size={13} />
+            </span>
+          </footer>
+        </div>
+        <Dialog open={help} onOpenChange={setHelp}>
+          <DialogContent closeLabel={t("Close")}>
+            <DialogTitle>{t("About this workspace")}</DialogTitle>
+            <DialogDescription>
+              {t(
+                "This is a browser-local Product iCode Connect prototype. No user authentication, cloud database, email services or Amazon API is connected. Use fictional details only. Publishing a product updates its consumer page in the same browser.",
+              )}
+            </DialogDescription>
+            <DemoNotice />
+          </DialogContent>
+        </Dialog>
       </div>
-      <Dialog open={help} onOpenChange={setHelp}>
-        <DialogContent>
-          <DialogTitle>About this workspace</DialogTitle>
-          <DialogDescription>
-            This is a browser-local Product iCode Connect prototype. No user authentication, cloud
-            database, email services or Amazon API is connected. Use fictional details only.
-            Publishing a product updates its consumer page in the same browser.
-          </DialogDescription>
-          <DemoNotice />
-        </DialogContent>
-      </Dialog>
-    </div>
+    </AdminLanguageProvider>
   );
 }
 export function PageHeading({
@@ -237,6 +262,7 @@ const scanPoints = [
   98, 91, 105, 91,
 ];
 export function Dashboard() {
+  const { t, language } = useAdminTranslation();
   const { state } = useDemo();
   const [period, setPeriod] = useState("Last 30 days");
   const [range, setRange] = useState("30 days");
@@ -245,14 +271,16 @@ export function Dashboard() {
     {
       title: "Total products",
       value: state.products.length,
-      note: `${published} published product`,
+      note: t("{count} published product", { count: published }),
       change: "Active catalog",
       icon: Box,
       tone: "mint",
     },
     {
       title: "Product scans",
-      value: state.visits.toLocaleString(),
+      value: state.visits.toLocaleString(
+        language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
+      ),
       note: "Across all digital product pages",
       change: "+18.6%",
       icon: QrCode,
@@ -261,7 +289,9 @@ export function Dashboard() {
     {
       title: "After-sales requests",
       value: state.records.filter((r) => r.kind === "Support").length,
-      note: `${state.records.filter((r) => r.kind === "Support" && r.status === "New").length} awaiting response`,
+      note: t("{count} awaiting response", {
+        count: state.records.filter((r) => r.kind === "Support" && r.status === "New").length,
+      }),
       change: "Needs attention",
       icon: Headphones,
       tone: "peach",
@@ -269,7 +299,9 @@ export function Dashboard() {
     {
       title: "Event registrations",
       value: state.records.filter((r) => r.kind === "Event").length,
-      note: `${state.campaigns.filter((e) => e.status === "Published").length} live community event`,
+      note: t("{count} live community event", {
+        count: state.campaigns.filter((e) => e.status === "Published").length,
+      }),
       change: "Community growth",
       icon: Users,
       tone: "lavender",
@@ -296,12 +328,12 @@ export function Dashboard() {
   return (
     <>
       <PageHeading
-        eyebrow="YOUR CONNECTED PRODUCT WORKSPACE"
-        title="Dashboard"
-        subtitle="A clearer view of your products, customers, and community."
+        eyebrow={t("YOUR CONNECTED PRODUCT WORKSPACE")}
+        title={t("Dashboard")}
+        subtitle={t("A clearer view of your products, customers, and community.")}
       >
         <select
-          aria-label="Reporting period"
+          aria-label={t("Reporting period")}
           className="select-control"
           value={period}
           onChange={(e) => {
@@ -315,20 +347,25 @@ export function Dashboard() {
             );
           }}
         >
-          <option>Last 30 days</option>
-          <option>Last 7 days</option>
-          <option>Last 90 days</option>
+          <option value="Last 30 days">{t("Last 30 days")}</option>
+          <option value="Last 7 days">{t("Last 7 days")}</option>
+          <option value="Last 90 days">{t("Last 90 days")}</option>
         </select>
         <Button variant="outline" onClick={exportData}>
-          <ArrowDownToLine /> Export report
+          <ArrowDownToLine />
+          {t("Export report")}
         </Button>
       </PageHeading>
-      <DemoNotice text="You’re exploring a demo workspace. All products, identifiers, events, and customer records are Demo Data. Stored in this browser only — no cross-device sync or production database." />
+      <DemoNotice
+        text={t(
+          "You’re exploring a demo workspace. All products, identifiers, events, and customer records are Demo Data. Stored in this browser only — no cross-device sync or production database.",
+        )}
+      />
       <div className="metrics-grid">
         {metrics.map((m) => (
           <article key={m.title} className="metric-card">
             <div className="flex items-center justify-between">
-              <span>{m.title}</span>
+              <span>{t(m.title)}</span>
               <div className={cn("metric-icon", m.tone)}>
                 <m.icon size={19} />
               </div>
@@ -339,10 +376,10 @@ export function Dashboard() {
                 className={m.title === "After-sales requests" ? "text-warning" : "text-primary"}
               >
                 {m.title === "Product scans" && <ArrowUpRight size={13} />}
-                {m.change}
+                {t(m.change)}
               </span>
             </div>
-            <p>{m.note}</p>
+            <p>{t(m.note)}</p>
           </article>
         ))}
       </div>
@@ -350,8 +387,8 @@ export function Dashboard() {
         <section className="chart-panel">
           <div className="section-head">
             <div>
-              <h2>Product engagement</h2>
-              <p>Scan activity across your digital product pages</p>
+              <h2>{t("Product engagement")}</h2>
+              <p>{t("Scan activity across your digital product pages")}</p>
             </div>
             <div className="segmented">
               {["7 days", "30 days", "90 days"].map((r) => (
@@ -365,18 +402,22 @@ export function Dashboard() {
                     setPeriod(`Last ${r}`);
                   }}
                 >
-                  {r}
+                  {t(r)}
                 </Button>
               ))}
             </div>
           </div>
           <div className="chart-summary">
-            <strong>{state.visits.toLocaleString()}</strong>
+            <strong>
+              {state.visits.toLocaleString(
+                language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
+              )}
+            </strong>
             <span className="text-primary">
               <ArrowUpRight size={14} />
               18.6%
             </span>
-            <small>vs. previous period · Demo Data</small>
+            <small>{t("vs. previous period · Demo Data")}</small>
           </div>
           <div className="scan-chart">
             <div className="chart-y">
@@ -391,7 +432,7 @@ export function Dashboard() {
                 viewBox="0 0 700 190"
                 preserveAspectRatio="none"
                 role="img"
-                aria-label="Demo scan activity chart"
+                aria-label={t("Demo scan activity chart")}
               >
                 <defs>
                   <linearGradient id="chart-fill" x1="0" x2="0" y1="0" y2="1">
@@ -420,25 +461,27 @@ export function Dashboard() {
                 />
               </svg>
               <div className="chart-x">
-                <span>Oct 16</span>
-                <span>Oct 21</span>
-                <span>Oct 26</span>
-                <span>Oct 31</span>
-                <span>Nov 5</span>
-                <span>Nov 10</span>
-                <span>Nov 14</span>
+                <span>{t("Oct 16")}</span>
+                <span>{t("Oct 21")}</span>
+                <span>{t("Oct 26")}</span>
+                <span>{t("Oct 31")}</span>
+                <span>{t("Nov 5")}</span>
+                <span>{t("Nov 10")}</span>
+                <span>{t("Nov 14")}</span>
               </div>
             </div>
           </div>
           <div className="chart-legend">
-            <span /> Product scans <small>Illustrative demo analytics</small>
+            <span />
+            {t("Product scans")}
+            <small>{t("Illustrative demo analytics")}</small>
           </div>
         </section>
         <section className="journey-panel">
           <div className="section-head">
             <div>
-              <h2>Your product journey</h2>
-              <p>From a scan to a lasting connection</p>
+              <h2>{t("Your product journey")}</h2>
+              <p>{t("From a scan to a lasting connection")}</p>
             </div>
             <Sparkles size={18} className="text-primary" />
           </div>
@@ -471,9 +514,9 @@ export function Dashboard() {
                   <s.icon size={17} />
                 </span>
                 <div>
-                  <strong>{s.label}</strong>
-                  <p>{s.detail}</p>
-                  <span>{s.done ? "Completed" : `Step ${i + 1}`}</span>
+                  <strong>{t(s.label)}</strong>
+                  <p>{t(s.detail)}</p>
+                  <span>{s.done ? t("Completed") : t("Step {count}", { count: i + 1 })}</span>
                 </div>
                 {s.done && <Check size={15} className="text-primary ml-auto" />}
               </div>
@@ -481,11 +524,13 @@ export function Dashboard() {
           </div>
           <Button variant="outline" asChild className="w-full mt-5">
             <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
-              Explore consumer experience <ArrowUpRight />
+              {t("Explore consumer experience")}
+              <ArrowUpRight />
             </Link>
           </Button>
           <span className="journey-foot">
-            <Globe2 size={13} /> Designed for the European market
+            <Globe2 size={13} />
+            {t("Designed for the European market")}
           </span>
         </section>
       </div>
@@ -493,13 +538,15 @@ export function Dashboard() {
         <div className="section-head">
           <div>
             <h2>
-              Your products <span className="count-pill">{state.products.length}</span>
+              {t("Your products")}
+              <span className="count-pill">{state.products.length}</span>
             </h2>
-            <p>Digital identities that connect your brand to your customers</p>
+            <p>{t("Digital identities that connect your brand to your customers")}</p>
           </div>
           <Button variant="outline" asChild>
             <Link to="/admin/products">
-              <Plus /> Add product
+              <Plus />
+              {t("Add product")}
             </Link>
           </Button>
         </div>
@@ -507,12 +554,12 @@ export function Dashboard() {
           <table>
             <thead>
               <tr>
-                <th>PRODUCT</th>
-                <th>PRODUCT ID / SKU</th>
-                <th>MARKET</th>
-                <th>STATUS</th>
-                <th>SCANS</th>
-                <th>LAST PUBLISHED</th>
+                <th>{t("PRODUCT")}</th>
+                <th>{t("PRODUCT ID / SKU")}</th>
+                <th>{t("MARKET")}</th>
+                <th>{t("STATUS")}</th>
+                <th>{t("SCANS")}</th>
+                <th>{t("LAST PUBLISHED")}</th>
                 <th />
               </tr>
             </thead>
@@ -524,7 +571,10 @@ export function Dashboard() {
                       <img src={p.draft.image} alt="" width={48} height={48} />
                       <span>
                         <strong>{p.draft.name}</strong>
-                        <small>{p.draft.brand} · Smart home</small>
+                        <small>
+                          {p.draft.brand}
+                          {t("· Smart home")}
+                        </small>
                       </span>
                     </Link>
                   </td>
@@ -533,27 +583,34 @@ export function Dashboard() {
                     <small>{p.draft.sku}</small>
                   </td>
                   <td>
-                    <span>🇩🇪 Germany</span>
-                    <small>European Union</small>
+                    <span>{t("🇩🇪 Germany")}</span>
+                    <small>{t("European Union")}</small>
                   </td>
                   <td>
                     <Status value={p.published ? "Published" : "Draft"} />
                   </td>
                   <td className="font-medium">
-                    {p.published ? state.visits.toLocaleString() : "—"}
+                    {p.published
+                      ? state.visits.toLocaleString(
+                          language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
+                        )
+                      : "—"}
                   </td>
                   <td>
                     {p.published
-                      ? new Date(p.published.publishedAt || "").toLocaleDateString("en-GB", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })
+                      ? new Date(p.published.publishedAt || "").toLocaleDateString(
+                          language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
+                          {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          },
+                        )
                       : "—"}
-                    <small>Demo Data</small>
+                    <small>{t("Demo Data")}</small>
                   </td>
                   <td>
-                    <Button variant="ghost" size="icon" asChild title="Edit product">
+                    <Button variant="ghost" size="icon" asChild title={t("Edit product")}>
                       <Link to="/admin/products">
                         <MoreHorizontal />
                       </Link>
@@ -565,18 +622,20 @@ export function Dashboard() {
           </table>
         </div>
         <Link to="/admin/products" className="section-link">
-          Manage all products <ArrowRight size={14} />
+          {t("Manage all products")}
+          <ArrowRight size={14} />
         </Link>
       </section>
       <div className="lower-grid">
         <section>
           <div className="section-head">
             <div>
-              <h2>Recent activity</h2>
-              <p>The latest moments in your workspace</p>
+              <h2>{t("Recent activity")}</h2>
+              <p>{t("The latest moments in your workspace")}</p>
             </div>
             <Link to="/admin/after-sales" className="small-link">
-              View all <ArrowRight size={14} />
+              {t("View all")}
+              <ArrowRight size={14} />
             </Link>
           </div>
           {state.records.slice(0, 3).map((r) => (
@@ -598,13 +657,13 @@ export function Dashboard() {
               <div>
                 <strong>
                   {r.kind === "Support"
-                    ? "New support request"
+                    ? t("New support request")
                     : r.kind === "Warranty"
-                      ? "Warranty registered"
-                      : "New event registration"}
+                      ? t("Warranty registered")
+                      : t("New event registration")}
                 </strong>
                 <p>
-                  {r.name} · {r.kind === "Event" ? "Berlin community event" : "AirPure Mini"}
+                  {r.name} · {r.kind === "Event" ? t("Berlin community event") : "AirPure Mini"}
                 </p>
               </div>
               <small>{r.date.slice(5)}</small>
@@ -616,25 +675,28 @@ export function Dashboard() {
             <span className="dpp-icon">
               <Leaf size={21} />
             </span>
-            <span className="demo-label">LOOKING AHEAD</span>
+            <span className="demo-label">{t("LOOKING AHEAD")}</span>
           </div>
-          <h2>A more transparent product future.</h2>
+          <h2>{t("A more transparent product future.")}</h2>
           <p>
-            Start organizing your product information for the next chapter of digital product
-            passports.
+            {t(
+              "Start organizing your product information for the next chapter of digital product passports.",
+            )}
           </p>
           <Button variant="outline" asChild>
             <Link to="/admin/dpp">
-              Explore DPP Ready <ArrowRight />
+              {t("Explore DPP Ready")}
+              <ArrowRight />
             </Link>
           </Button>
-          <small>Demo only. Not a declaration of EU DPP compliance.</small>
+          <small>{t("Demo only. Not a declaration of EU DPP compliance.")}</small>
         </section>
       </div>
     </>
   );
 }
 export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
+  const { t } = useAdminTranslation();
   const { state, update, ready } = useDemo();
   const [selected, setSelected] = useState("demo-prod-airpure-001");
   const entry = state.products.find((p) => p.draft.id === selected);
@@ -661,8 +723,8 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
     setDirty(false);
     toast.success(
       publish
-        ? "Product published. Consumer page is now updated."
-        : "Draft saved. Consumer page is unchanged.",
+        ? t("Product published. Consumer page is now updated.")
+        : t("Draft saved. Consumer page is unchanged."),
     );
   }
   function create() {
@@ -685,7 +747,7 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
   async function imageFile(file?: File) {
     if (!file) return;
     if (!file.type.startsWith("image/") || file.size > 1500000) {
-      toast.error("Choose an image smaller than 1.5 MB for this local demo.");
+      toast.error(t("Choose an image smaller than 1.5 MB for this local demo."));
       return;
     }
     const reader = new FileReader();
@@ -697,16 +759,17 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
   return (
     <>
       <PageHeading
-        title={contentOnly ? "Product content" : "Products"}
+        title={contentOnly ? t("Product content") : t("Products")}
         subtitle={
           contentOnly
-            ? "Useful information, in your customers’ own language."
-            : "One product identity. Every customer touchpoint."
+            ? t("Useful information, in your customers’ own language.")
+            : t("One product identity. Every customer touchpoint.")
         }
       >
         {!contentOnly && (
           <Button onClick={create}>
-            <Plus /> Create product
+            <Plus />
+            {t("Create product")}
           </Button>
         )}
       </PageHeading>
@@ -716,8 +779,8 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
           <div className="search-box">
             <Search size={16} />
             <Input
-              aria-label="Search products"
-              placeholder="Search products…"
+              aria-label={t("Search products")}
+              placeholder={t("Search products…")}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
@@ -737,7 +800,9 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
                 <img src={p.draft.image} width={44} height={44} alt="" />
                 <span>
                   <strong>{p.draft.name}</strong>
-                  <small>{p.published ? "Published" : "Draft"} · Demo Data</small>
+                  <small>
+                    {p.published ? t("Published") : t("Draft")} · {t("Demo Data")}
+                  </small>
                 </span>
                 <ChevronRight size={16} />
               </Button>
@@ -748,7 +813,7 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
             <div>
               <h2>{form.name}</h2>
               <p className="break-all">
-                {form.id} · {dirty ? "Unsaved changes" : "Saved draft"}
+                {form.id} · {dirty ? t("Unsaved changes") : t("Saved draft")}
               </p>
             </div>
             <Status value={entry?.published ? "Published" : "Draft"} />
@@ -759,7 +824,8 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
                 <div className="product-image-editor">
                   <img src={form.image} alt={form.name} width={220} height={220} />
                   <label className="file-control">
-                    <Plus size={15} /> Change image
+                    <Plus size={15} />
+                    {t("Change image")}
                     <input
                       type="file"
                       accept="image/*"
@@ -769,50 +835,50 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
                 </div>
                 <div className="grid gap-4">
                   <TextField
-                    label="Product name"
+                    label={t("Product name")}
                     value={form.name}
                     onChange={(v) => change("name", v)}
                     required
                   />
                   <TextField
-                    label="Brand"
+                    label={t("Brand")}
                     value={form.brand}
                     onChange={(v) => change("brand", v)}
                   />
                   <TextField
-                    label="Model"
+                    label={t("Model")}
                     value={form.model}
                     onChange={(v) => change("model", v)}
                   />
                 </div>
                 <TextField label="SKU" value={form.sku} onChange={(v) => change("sku", v)} />
                 <TextField
-                  label="GTIN · Demo Data"
+                  label={t("GTIN · Demo Data")}
                   value={form.gtin}
                   onChange={(v) => change("gtin", v)}
                 />
                 <TextField
-                  label="ASIN · Demo Data"
+                  label={t("ASIN · Demo Data")}
                   value={form.asin}
                   onChange={(v) => change("asin", v)}
                 />
                 <TextField
-                  label="Brand serial number · Demo Data"
+                  label={t("Brand serial number · Demo Data")}
                   value={form.serial}
                   onChange={(v) => change("serial", v)}
                 />
               </>
             )}
             <div className="col-span-full flex items-center justify-between mt-3">
-              <h3>Localized content</h3>
+              <h3>{t("Localized content")}</h3>
               <select
                 className="select-control"
-                aria-label="Content language"
+                aria-label={t("Content language")}
                 value={locale}
                 onChange={(e) => setLocale(e.target.value as Locale)}
               >
-                <option value="en">English</option>
-                <option value="de">Deutsch</option>
+                <option value="en">{t("English")}</option>
+                <option value="de">{t("Deutsch")}</option>
                 <option value="zh">中文</option>
               </select>
             </div>
@@ -821,19 +887,19 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
                 <Field
                   label={
                     k === "description"
-                      ? "Product description"
+                      ? t("Product description")
                       : k === "manual"
-                        ? "User manual · Instructions or HTTPS link"
-                        : "Frequently asked questions"
+                        ? t("User manual · Instructions or HTTPS link")
+                        : t("Frequently asked questions")
                   }
                 >
                   <textarea
                     aria-label={
                       k === "description"
-                        ? "Product description"
+                        ? t("Product description")
                         : k === "manual"
-                          ? "User manual"
-                          : "Frequently asked questions"
+                          ? t("User manual")
+                          : t("Frequently asked questions")
                     }
                     className="textarea-control"
                     rows={k === "description" ? 3 : 4}
@@ -845,7 +911,7 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
             ))}
             <div className="col-span-full">
               <TextField
-                label="Video link · HTTPS URL (optional)"
+                label={t("Video link · HTTPS URL (optional)")}
                 type="url"
                 value={form.video}
                 onChange={(v) => change("video", v)}
@@ -853,20 +919,22 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
             </div>
           </div>
           <div className="editor-footer">
-            <p>Only published versions appear on consumer pages.</p>
+            <p>{t("Only published versions appear on consumer pages.")}</p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => save()}>
-                Save draft
+                {t("Save draft")}
               </Button>
               <Button disabled={!form.name.trim()} onClick={() => save(true)}>
-                <Check /> Publish product
+                <Check />
+                {t("Publish product")}
               </Button>
             </div>
           </div>
           {entry?.published && (
             <Button variant="link" asChild>
               <Link to="/p/$slug" params={{ slug: form.slug }}>
-                View published product <ExternalLink />
+                {t("View published product")}
+                <ExternalLink />
               </Link>
             </Button>
           )}
@@ -876,6 +944,7 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
   );
 }
 export function AfterSales() {
+  const { t, language } = useAdminTranslation();
   const { state, update } = useDemo();
   const [filter, setFilter] = useState("All records");
   const [query, setQuery] = useState("");
@@ -887,7 +956,10 @@ export function AfterSales() {
   );
   return (
     <>
-      <PageHeading title="After-sales" subtitle="Thoughtful support, beyond the first purchase." />
+      <PageHeading
+        title={t("After-sales")}
+        subtitle={t("Thoughtful support, beyond the first purchase.")}
+      />
       <DemoNotice />
       <div className="section-head mt-7">
         <div className="segmented">
@@ -899,15 +971,15 @@ export function AfterSales() {
               className={filter === f ? "selected" : ""}
               onClick={() => setFilter(f)}
             >
-              {f}
+              {t(f)}
             </Button>
           ))}
         </div>
         <div className="search-box">
           <Search size={16} />
           <Input
-            aria-label="Search customer records"
-            placeholder="Search demo records…"
+            aria-label={t("Search customer records")}
+            placeholder={t("Search demo records…")}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -917,12 +989,12 @@ export function AfterSales() {
         <table>
           <thead>
             <tr>
-              <th>RECORD</th>
-              <th>CUSTOMER · DEMO DATA</th>
-              <th>TYPE</th>
-              <th>DETAILS</th>
-              <th>DATE</th>
-              <th>STATUS</th>
+              <th>{t("RECORD")}</th>
+              <th>{t("CUSTOMER · DEMO DATA")}</th>
+              <th>{t("TYPE")}</th>
+              <th>{t("DETAILS")}</th>
+              <th>{t("DATE")}</th>
+              <th>{t("STATUS")}</th>
             </tr>
           </thead>
           <tbody>
@@ -933,7 +1005,7 @@ export function AfterSales() {
                   <strong>{r.name}</strong>
                   <small>{r.email}</small>
                 </td>
-                <td>{r.kind}</td>
+                <td>{t(r.kind)}</td>
                 <td className="details-cell">
                   {r.details}
                   <small>{r.serial}</small>
@@ -943,7 +1015,7 @@ export function AfterSales() {
                   {r.kind === "Support" ? (
                     <select
                       className="select-control"
-                      aria-label={`Status ${r.id}`}
+                      aria-label={t("Status {id}", { id: r.id })}
                       value={r.status}
                       onChange={(e) => {
                         const status = e.target.value as typeof r.status;
@@ -951,12 +1023,12 @@ export function AfterSales() {
                           ...s,
                           records: s.records.map((v) => (v.id === r.id ? { ...v, status } : v)),
                         }));
-                        toast.success("Ticket status updated");
+                        toast.success(t("Ticket status updated"));
                       }}
                     >
-                      <option>New</option>
-                      <option>In progress</option>
-                      <option>Resolved</option>
+                      <option value="New">{t("New")}</option>
+                      <option value="In progress">{t("In progress")}</option>
+                      <option value="Resolved">{t("Resolved")}</option>
                     </select>
                   ) : (
                     <Status value="New" />
@@ -966,16 +1038,18 @@ export function AfterSales() {
             ))}
           </tbody>
         </table>
-        {!records.length && <p className="empty-state">No records match your search.</p>}
+        {!records.length && <p className="empty-state">{t("No records match your search.")}</p>}
       </div>
       <p className="text-sm text-muted-foreground mt-5">
-        Warranty registration never creates marketing consent. Marketing permissions are managed
-        separately.
+        {t(
+          "Warranty registration never creates marketing consent. Marketing permissions are managed separately.",
+        )}
       </p>
     </>
   );
 }
 export function Marketing() {
+  const { t, language } = useAdminTranslation();
   const { state, update } = useDemo();
   const [edit, setEdit] = useState<Campaign | null>(null);
   const [lang, setLang] = useState<Locale>("en");
@@ -999,16 +1073,17 @@ export function Marketing() {
         : [...s.campaigns, event],
     }));
     setEdit(null);
-    toast.success(status === "Published" ? "Event published" : "Event draft saved");
+    toast.success(t(status === "Published" ? "Event published" : "Event draft saved"));
   };
   return (
     <>
       <PageHeading
-        title="Marketing & Community"
-        subtitle="Meaningful local moments. Lasting brand connections."
+        title={t("Marketing & Community")}
+        subtitle={t("Meaningful local moments. Lasting brand connections.")}
       >
         <Button onClick={create}>
-          <Plus /> Create event
+          <Plus />
+          {t("Create event")}
         </Button>
       </PageHeading>
       <DemoNotice />
@@ -1021,7 +1096,7 @@ export function Marketing() {
             className={tab === t ? "selected" : ""}
             onClick={() => setTab(t)}
           >
-            {t}
+            {translateAdmin(language, t)}
           </Button>
         ))}
       </div>
@@ -1035,17 +1110,19 @@ export function Marketing() {
               </div>
               <div className="p-5">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-muted-foreground">{e.date} · Demo Data</span>
+                  <span className="text-xs text-muted-foreground">
+                    {e.date} · {t("Demo Data")}
+                  </span>
                   <Status value={e.status} />
                 </div>
-                <h2 className="mt-4">{e.title.en}</h2>
-                <p className="my-3 text-sm text-muted-foreground">{e.description.en}</p>
+                <h2 className="mt-4">{e.title[language]}</h2>
+                <p className="my-3 text-sm text-muted-foreground">{e.description[language]}</p>
                 <span className="text-xs text-muted-foreground">
-                  {state.records.filter((r) => r.eventId === e.id).length} registrations
+                  {state.records.filter((r) => r.eventId === e.id).length} {t("registrations")}
                 </span>
                 <div className="flex gap-2 mt-5">
                   <Button variant="outline" size="sm" onClick={() => setEdit(e)}>
-                    Edit event
+                    {t("Edit event")}
                   </Button>
                   {e.status === "Published" && (
                     <Button
@@ -1058,10 +1135,10 @@ export function Marketing() {
                             v.id === e.id ? { ...v, status: "Closed" } : v,
                           ),
                         }));
-                        toast.success("Event closed. Registrations are disabled.");
+                        toast.success(t("Event closed. Registrations are disabled."));
                       }}
                     >
-                      Close event
+                      {t("Close event")}
                     </Button>
                   )}
                 </div>
@@ -1074,9 +1151,9 @@ export function Marketing() {
           <table>
             <thead>
               <tr>
-                <th>EMAIL · DEMO DATA</th>
-                <th>{tab === "Registrations" ? "ATTENDEE" : "CONSENT"}</th>
-                <th>{tab === "Registrations" ? "EVENT" : "UPDATED"}</th>
+                <th>{t("EMAIL · DEMO DATA")}</th>
+                <th>{tab === "Registrations" ? t("ATTENDEE") : t("CONSENT")}</th>
+                <th>{tab === "Registrations" ? t("EVENT") : t("UPDATED")}</th>
               </tr>
             </thead>
             <tbody>
@@ -1087,7 +1164,11 @@ export function Marketing() {
                       <tr key={r.id}>
                         <td>{r.email}</td>
                         <td>{r.name}</td>
-                        <td>{r.details}</td>
+                        <td>
+                          {state.campaigns.find((event) => event.id === r.eventId)?.title[
+                            language
+                          ] || r.details}
+                        </td>
                       </tr>
                     ))
                 : state.consents.map((c) => (
@@ -1096,7 +1177,11 @@ export function Marketing() {
                       <td>
                         <Status value={c.active ? "Active" : "Withdrawn"} />
                       </td>
-                      <td>{new Date(c.updatedAt).toLocaleDateString("en-GB")}</td>
+                      <td>
+                        {new Date(c.updatedAt).toLocaleDateString(
+                          language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
+                        )}
+                      </td>
                     </tr>
                   ))}
             </tbody>
@@ -1109,38 +1194,38 @@ export function Marketing() {
           if (!open) setEdit(null);
         }}
       >
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
-          <DialogTitle>{edit?.title.en}</DialogTitle>
-          <DialogDescription>Fictional local community event · Demo Data</DialogDescription>
+        <DialogContent closeLabel={t("Close")} className="max-h-[90vh] overflow-y-auto">
+          <DialogTitle>{edit?.title[language]}</DialogTitle>
+          <DialogDescription>{t("Fictional local community event · Demo Data")}</DialogDescription>
           {edit && (
             <>
               <select
                 className="select-control"
-                aria-label="Event language"
+                aria-label={t("Event language")}
                 value={lang}
                 onChange={(e) => setLang(e.target.value as Locale)}
               >
-                <option value="en">English</option>
-                <option value="de">Deutsch</option>
+                <option value="en">{t("English")}</option>
+                <option value="de">{t("Deutsch")}</option>
                 <option value="zh">中文</option>
               </select>
               <TextField
-                label="Event title"
+                label={t("Event title")}
                 value={edit.title[lang]}
                 onChange={(v) => setEdit({ ...edit, title: { ...edit.title, [lang]: v } })}
               />
               <TextField
-                label="City"
+                label={t("City")}
                 value={edit.city}
                 onChange={(v) => setEdit({ ...edit, city: v })}
               />
               <TextField
-                label="Date"
+                label={t("Date")}
                 type="date"
                 value={edit.date}
                 onChange={(v) => setEdit({ ...edit, date: v })}
               />
-              <Field label="Description">
+              <Field label={t("Description")}>
                 <textarea
                   className="textarea-control"
                   value={edit.description[lang]}
@@ -1154,13 +1239,13 @@ export function Marketing() {
               </Field>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => save("Draft")}>
-                  Save draft
+                  {t("Save draft")}
                 </Button>
                 <Button
                   disabled={!edit.title[lang].trim() || !edit.date}
                   onClick={() => save("Published")}
                 >
-                  Publish event
+                  {t("Publish event")}
                 </Button>
               </div>
             </>
@@ -1171,12 +1256,13 @@ export function Marketing() {
   );
 }
 export function Transparency() {
+  const { t, language } = useAdminTranslation();
   const { state } = useDemo();
   return (
     <>
       <PageHeading
-        title="Product transparency"
-        subtitle="A clear identity. An honest verification journey."
+        title={t("Product transparency")}
+        subtitle={t("A clear identity. An honest verification journey.")}
       />
       <DemoNotice />
       <div className="info-columns mt-7">
@@ -1184,11 +1270,12 @@ export function Transparency() {
           <ShieldCheck className="text-primary mb-4" size={28} />
           <h2>Amazon Transparency</h2>
           <p>
-            Official Transparency codes are issued through Amazon’s program. Consumers should scan
-            an official code using the Amazon Shopping or Transparency app.
+            {t(
+              "Official Transparency codes are issued through Amazon’s program. Consumers should scan an official code using the Amazon Shopping or Transparency app.",
+            )}
           </p>
           <span className="info-warning">
-            No Amazon API connected. No official verification result is provided.
+            {t("No Amazon API connected. No official verification result is provided.")}
           </span>
           <a
             href="https://www.amazon.com/transparency"
@@ -1196,33 +1283,36 @@ export function Transparency() {
             rel="noreferrer"
             className="section-link"
           >
-            Amazon official information <ExternalLink size={14} />
+            {t("Amazon official information")}
+            <ExternalLink size={14} />
           </a>
         </section>
         <section className="info-block">
           <QrCode className="text-info mb-4" size={28} />
-          <h2>Brand-owned serial codes</h2>
+          <h2>{t("Brand-owned serial codes")}</h2>
           <p>
-            NOVA Home’s demo serial numbers connect products to this digital experience. They are
-            not Amazon Transparency codes and cannot prove authenticity.
+            {t(
+              "NOVA Home’s demo serial numbers connect products to this digital experience. They are not Amazon Transparency codes and cannot prove authenticity.",
+            )}
           </p>
           <span className="info-warning">
-            Demo mappings only. A serial match is not official certification.
+            {t("Demo mappings only. A serial match is not official certification.")}
           </span>
         </section>
       </div>
       <h2 className="mt-8 mb-5">
-        Product identity mappings <span className="demo-label">DEMO DATA</span>
+        {t("Product identity mappings")}
+        <span className="demo-label">{t("DEMO DATA")}</span>
       </h2>
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
-              <th>PRODUCT</th>
-              <th>UNIQUE ID</th>
+              <th>{t("PRODUCT")}</th>
+              <th>{t("UNIQUE ID")}</th>
               <th>ASIN / GTIN</th>
-              <th>SKU / BRAND SERIAL</th>
-              <th>OFFICIAL CODE</th>
+              <th>{t("SKU / BRAND SERIAL")}</th>
+              <th>{t("OFFICIAL CODE")}</th>
             </tr>
           </thead>
           <tbody>
@@ -1238,7 +1328,7 @@ export function Transparency() {
                   {p.draft.sku}
                   <small>{p.draft.serial}</small>
                 </td>
-                <td>Not connected</td>
+                <td>{t("Not connected")}</td>
               </tr>
             ))}
           </tbody>
@@ -1248,6 +1338,7 @@ export function Transparency() {
   );
 }
 export function Dpp() {
+  const { t, language } = useAdminTranslation();
   const { state, update } = useDemo();
   const [id, setId] = useState(demoProduct.id);
   const entry = state.products.find((p) => p.draft.id === id);
@@ -1258,20 +1349,24 @@ export function Dpp() {
   return (
     <>
       <PageHeading
-        title="DPP Ready"
-        subtitle="Organize today’s product data for tomorrow’s transparency."
+        title={t("DPP Ready")}
+        subtitle={t("Organize today’s product data for tomorrow’s transparency.")}
       />
-      <DemoNotice text="DPP Ready is a demonstration of future product passport fields. It does not represent compliance with statutory EU Digital Product Passport requirements." />
+      <DemoNotice
+        text={t(
+          "DPP Ready is a demonstration of future product passport fields. It does not represent compliance with statutory EU Digital Product Passport requirements.",
+        )}
+      />
       <div className="dpp-heading">
         <Leaf size={34} />
         <div>
-          <h2>Product information, thoughtfully connected.</h2>
-          <p>Materials, manufacturer and technical specifications in one place.</p>
+          <h2>{t("Product information, thoughtfully connected.")}</h2>
+          <p>{t("Materials, manufacturer and technical specifications in one place.")}</p>
         </div>
-        <span className="demo-label">DEMO DATA</span>
+        <span className="demo-label">{t("DEMO DATA")}</span>
       </div>
       <section className="editor max-w-3xl">
-        <Field label="Product">
+        <Field label={t("Product")}>
           <select className="select-control" value={id} onChange={(e) => setId(e.target.value)}>
             {state.products.map((p) => (
               <option key={p.draft.id} value={p.draft.id}>
@@ -1286,37 +1381,37 @@ export function Dpp() {
               key={k}
               label={
                 k === "specs"
-                  ? "Technical specifications"
+                  ? t("Technical specifications")
                   : k === "materials"
-                    ? "Materials · Demo Data"
-                    : "Manufacturer · Demo Data"
+                    ? t("Materials · Demo Data")
+                    : t("Manufacturer · Demo Data")
               }
               value={form[k]}
               onChange={(v) => setForm({ ...form, [k]: v })}
             />
           ))}
           <div className="flex flex-wrap gap-2">
-            <span className="status status-muted">Carbon footprint · Future field</span>
-            <span className="status status-muted">Recyclability · Future field</span>
-            <span className="status status-muted">EU passport ID · Not assigned</span>
+            <span className="status status-muted">{t("Carbon footprint · Future field")}</span>
+            <span className="status status-muted">{t("Recyclability · Future field")}</span>
+            <span className="status status-muted">{t("EU passport ID · Not assigned")}</span>
           </div>
           <div className="flex gap-2">
             <Button
               variant="outline"
               onClick={() => {
                 update((s) => saveDraft(s, form));
-                toast.success("DPP draft saved");
+                toast.success(t("DPP draft saved"));
               }}
             >
-              Save draft
+              {t("Save draft")}
             </Button>
             <Button
               onClick={() => {
                 update((s) => publishProduct(saveDraft(s, form), form));
-                toast.success("DPP demo information published");
+                toast.success(t("DPP demo information published"));
               }}
             >
-              Publish product
+              {t("Publish product")}
             </Button>
           </div>
         </div>

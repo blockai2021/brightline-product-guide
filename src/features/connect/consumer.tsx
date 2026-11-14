@@ -28,6 +28,7 @@ import { useDemo } from "./store";
 import { Field, TextField } from "./ui";
 import { registerEvent, setConsent, type Campaign, type Locale, type RecordEntry } from "./domain";
 import { copy } from "./translations";
+import { useLanguage } from "./language";
 import { cn } from "@/lib/utils";
 function safeUrl(value: string) {
   try {
@@ -39,7 +40,7 @@ function safeUrl(value: string) {
 }
 export function Consumer({ slug }: { slug: string }) {
   const { state, update, ready } = useDemo();
-  const [lang, setLang] = useState<Locale>("en");
+  const [lang, setLang] = useLanguage("consumer");
   const [tab, setTab] = useState("product");
   const [modal, setModal] = useState<"Warranty" | "Support" | "Event" | "Manual" | null>(null);
   const [event, setEvent] = useState<Campaign | null>(null);

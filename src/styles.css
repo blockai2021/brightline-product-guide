@@ -2108,3 +2108,85 @@ td small {
 :root {
   --product-surface: oklch(0.865 0.003 250);
 }
+
+/* Localized admin text must wrap without changing the control's domain values. */
+.admin-sidebar {
+  overflow-y: auto;
+}
+.admin-sidebar .nav-item {
+  white-space: normal;
+}
+.admin-sidebar .nav-item > svg {
+  flex-shrink: 0;
+}
+.admin-sidebar .sidebar-text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.admin-topbar {
+  min-height: 73px;
+  height: auto;
+  padding-block: 12px;
+  flex-wrap: wrap;
+}
+.admin-topbar > div {
+  min-width: 0;
+}
+.admin-language-picker {
+  flex-shrink: 0;
+}
+.admin-content h1,
+.admin-content h2,
+.admin-content h3,
+.admin-content p,
+.admin-content button,
+.admin-content label,
+.admin-content .metric-card span {
+  overflow-wrap: anywhere;
+}
+.admin-shell[lang="de"] {
+  hyphens: auto;
+}
+.admin-content button {
+  white-space: normal;
+  height: auto;
+  min-height: 32px;
+}
+.admin-content .section-head,
+.admin-content .editor-footer > div,
+.admin-content .event-card .flex,
+.admin-content .segmented {
+  flex-wrap: wrap;
+}
+.admin-content .section-head > div {
+  min-width: 0;
+}
+.admin-content .picker-item > span {
+  min-width: 0;
+  white-space: normal;
+}
+.admin-content .picker-item {
+  text-align: start;
+}
+@media (max-width: 650px) {
+  .admin-topbar {
+    min-height: 60px;
+    gap: 6px;
+  }
+  .admin-topbar > div:first-child {
+    flex: 1;
+  }
+  .admin-topbar .consumer-link {
+    display: none;
+  }
+  .admin-topbar > div:first-child > span:last-child {
+    overflow-wrap: anywhere;
+    max-width: 160px;
+  }
+  .chart-panel .section-head {
+    gap: 12px;
+  }
+  .admin-content .page-heading {
+    align-items: flex-start;
+  }
+}

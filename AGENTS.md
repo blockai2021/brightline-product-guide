@@ -33,3 +33,4 @@ use the editor.
 - Use a typed browser-local demo repository through a shared React provider; isolate pure domain operations so a future API repository can replace persistence.
 - Keep editable product drafts separate from immutable published snapshots; consumer pages read only published snapshots to prevent leaking unpublished edits.
 - Use TanStack file routes for admin sections and a mobile-first consumer entry; both share the same repository and localized product types.
+- Keep admin UI copy namespaced in the shared locale dictionaries and persist each audience's language independently after hydration; language changes must not alter domain values or editable content languages.

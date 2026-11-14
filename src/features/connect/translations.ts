@@ -247,3 +247,1061 @@ export const copy: Record<Locale, Record<string, string>> = {
     tag: "德国与欧盟 · Demo Data",
   },
 };
+
+// Admin copy shares the consumer locale dictionaries; English source keys are namespaced.
+const adminCopy = {
+  Dashboard: {
+    en: "Dashboard",
+    zh: "概览",
+    de: "Übersicht",
+  },
+  Products: {
+    en: "Products",
+    zh: "产品",
+    de: "Produkte",
+  },
+  Transparency: {
+    en: "Transparency",
+    zh: "透明度",
+    de: "Transparenz",
+  },
+  Content: {
+    en: "Content",
+    zh: "内容",
+    de: "Inhalte",
+  },
+  "After-sales": {
+    en: "After-sales",
+    zh: "售后服务",
+    de: "Kundendienst",
+  },
+  "Marketing & Community": {
+    en: "Marketing & Community",
+    zh: "营销与社区",
+    de: "Marketing & Gemeinschaft",
+  },
+  "DPP Ready": {
+    en: "DPP Ready",
+    zh: "DPP Ready",
+    de: "DPP Ready",
+  },
+  "PRODUCT EXPERIENCE PLATFORM": {
+    en: "PRODUCT EXPERIENCE PLATFORM",
+    zh: "产品体验平台",
+    de: "PLATTFORM FÜR PRODUKTERLEBNISSE",
+  },
+  "Demo workspace": {
+    en: "Demo workspace",
+    zh: "演示工作区",
+    de: "Demo-Arbeitsbereich",
+  },
+  WORKSPACE: {
+    en: "WORKSPACE",
+    zh: "工作区",
+    de: "ARBEITSBEREICH",
+  },
+  Workspace: {
+    en: "Workspace",
+    zh: "工作区",
+    de: "Arbeitsbereich",
+  },
+  DEMO: {
+    en: "DEMO",
+    zh: "演示",
+    de: "DEMO",
+  },
+  "Your demo workspace": {
+    en: "Your demo workspace",
+    zh: "您的演示工作区",
+    de: "Ihr Demo-Arbeitsbereich",
+  },
+  "Explore a connected product journey.": {
+    en: "Explore a connected product journey.",
+    zh: "探索互联产品体验。",
+    de: "Entdecken Sie das vernetzte Produkterlebnis.",
+  },
+  "Open consumer experience": {
+    en: "Open consumer experience",
+    zh: "打开消费者页面",
+    de: "Kundenseite öffnen",
+  },
+  "Help & resources": {
+    en: "Help & resources",
+    zh: "帮助与资源",
+    de: "Hilfe & Ressourcen",
+  },
+  "Demo Administrator": {
+    en: "Demo Administrator",
+    zh: "演示管理员",
+    de: "Demo-Administrator",
+  },
+  "Workspace owner": {
+    en: "Workspace owner",
+    zh: "工作区所有者",
+    de: "Inhaber des Arbeitsbereichs",
+  },
+  "Toggle navigation": {
+    en: "Toggle navigation",
+    zh: "切换导航",
+    de: "Navigation umschalten",
+  },
+  "Demo environment": {
+    en: "Demo environment",
+    zh: "演示环境",
+    de: "Demo-Umgebung",
+  },
+  "Consumer view": {
+    en: "Consumer view",
+    zh: "消费者页面",
+    de: "Kundenseite",
+  },
+  Notifications: {
+    en: "Notifications",
+    zh: "通知",
+    de: "Benachrichtigungen",
+  },
+  "Recent activity · Demo Data": {
+    en: "Recent activity · Demo Data",
+    zh: "近期动态 · 演示数据",
+    de: "Letzte Aktivitäten · Demo-Daten",
+  },
+  "Germany & European Union": {
+    en: "Germany & European Union",
+    zh: "德国与欧盟",
+    de: "Deutschland & Europäische Union",
+  },
+  "About this workspace": {
+    en: "About this workspace",
+    zh: "关于此工作区",
+    de: "Über diesen Arbeitsbereich",
+  },
+  "This is a browser-local Product iCode Connect prototype. No user authentication, cloud database, email services or Amazon API is connected. Use fictional details only. Publishing a product updates its consumer page in the same browser.":
+    {
+      en: "This is a browser-local Product iCode Connect prototype. No user authentication, cloud database, email services or Amazon API is connected. Use fictional details only. Publishing a product updates its consumer page in the same browser.",
+      zh: "这是仅保存在浏览器中的 Product iCode Connect 原型，未连接登录、云端数据库、邮件服务或 Amazon 接口。请仅使用虚构信息。发布产品会更新同一浏览器中的消费者页面。",
+      de: "Dies ist ein lokaler Product iCode Connect-Prototyp ohne Anmeldung, Cloud-Datenbank, E-Mail-Dienst oder Amazon-API. Verwenden Sie nur fiktive Angaben. Veröffentlichungen aktualisieren die Kundenseite im selben Browser.",
+    },
+  "Last 30 days": {
+    en: "Last 30 days",
+    zh: "最近 30 天",
+    de: "Letzte 30 Tage",
+  },
+  "Last 7 days": {
+    en: "Last 7 days",
+    zh: "最近 7 天",
+    de: "Letzte 7 Tage",
+  },
+  "Last 90 days": {
+    en: "Last 90 days",
+    zh: "最近 90 天",
+    de: "Letzte 90 Tage",
+  },
+  "30 days": {
+    en: "30 days",
+    zh: "30 天",
+    de: "30 Tage",
+  },
+  "7 days": {
+    en: "7 days",
+    zh: "7 天",
+    de: "7 Tage",
+  },
+  "90 days": {
+    en: "90 days",
+    zh: "90 天",
+    de: "90 Tage",
+  },
+  "Total products": {
+    en: "Total products",
+    zh: "产品总数",
+    de: "Produkte insgesamt",
+  },
+  "Active catalog": {
+    en: "Active catalog",
+    zh: "当前产品目录",
+    de: "Aktiver Katalog",
+  },
+  "Product scans": {
+    en: "Product scans",
+    zh: "产品扫码次数",
+    de: "Produkt-Scans",
+  },
+  "Across all digital product pages": {
+    en: "Across all digital product pages",
+    zh: "所有产品数字页面总计",
+    de: "Über alle digitalen Produktseiten",
+  },
+  "After-sales requests": {
+    en: "After-sales requests",
+    zh: "售后请求",
+    de: "Serviceanfragen",
+  },
+  "Needs attention": {
+    en: "Needs attention",
+    zh: "待处理",
+    de: "Handlungsbedarf",
+  },
+  "Event registrations": {
+    en: "Event registrations",
+    zh: "活动报名",
+    de: "Veranstaltungsanmeldungen",
+  },
+  "Community growth": {
+    en: "Community growth",
+    zh: "社区增长",
+    de: "Community-Wachstum",
+  },
+  "YOUR CONNECTED PRODUCT WORKSPACE": {
+    en: "YOUR CONNECTED PRODUCT WORKSPACE",
+    zh: "您的互联产品工作区",
+    de: "IHR VERNETZTER PRODUKTARBEITSBEREICH",
+  },
+  "A clearer view of your products, customers, and community.": {
+    en: "A clearer view of your products, customers, and community.",
+    zh: "清晰了解您的产品、客户和社区。",
+    de: "Ihre Produkte, Kunden und Community im Überblick.",
+  },
+  "Reporting period": {
+    en: "Reporting period",
+    zh: "统计周期",
+    de: "Berichtszeitraum",
+  },
+  "Export report": {
+    en: "Export report",
+    zh: "导出报告",
+    de: "Bericht exportieren",
+  },
+  "You’re exploring a demo workspace. All products, identifiers, events, and customer records are Demo Data. Stored in this browser only — no cross-device sync or production database.":
+    {
+      en: "You’re exploring a demo workspace. All products, identifiers, events, and customer records are Demo Data. Stored in this browser only — no cross-device sync or production database.",
+      zh: "您正在浏览演示工作区。所有产品、标识、活动和客户记录均为演示数据，仅保存在此浏览器中，不跨设备同步，也不代替生产数据库。",
+      de: "Sie erkunden einen Demo-Arbeitsbereich. Alle Produkte, Kennungen, Veranstaltungen und Kundendaten sind Demo-Daten. Nur in diesem Browser gespeichert, ohne geräteübergreifende Synchronisierung oder Produktionsdatenbank.",
+    },
+  "Product engagement": {
+    en: "Product engagement",
+    zh: "产品互动",
+    de: "Produktinteraktionen",
+  },
+  "Scan activity across your digital product pages": {
+    en: "Scan activity across your digital product pages",
+    zh: "产品数字页面的扫码动态",
+    de: "Scan-Aktivität auf Ihren digitalen Produktseiten",
+  },
+  "vs. previous period · Demo Data": {
+    en: "vs. previous period · Demo Data",
+    zh: "与上一周期相比 · 演示数据",
+    de: "gegenüber Vorperiode · Demo-Daten",
+  },
+  "Demo scan activity chart": {
+    en: "Demo scan activity chart",
+    zh: "演示扫码趋势图",
+    de: "Demo-Diagramm der Scan-Aktivität",
+  },
+  "Illustrative demo analytics": {
+    en: "Illustrative demo analytics",
+    zh: "示意演示统计",
+    de: "Beispielhafte Demo-Statistik",
+  },
+  "Your product journey": {
+    en: "Your product journey",
+    zh: "您的产品旅程",
+    de: "Ihr Produktweg",
+  },
+  "From a scan to a lasting connection": {
+    en: "From a scan to a lasting connection",
+    zh: "从一次扫码到长久连接",
+    de: "Vom Scan zur dauerhaften Verbindung",
+  },
+  "Create a digital identity": {
+    en: "Create a digital identity",
+    zh: "创建数字身份",
+    de: "Digitale Identität erstellen",
+  },
+  "Give your product a connected home": {
+    en: "Give your product a connected home",
+    zh: "为产品建立互联服务入口",
+    de: "Ein vernetztes Zuhause für Ihr Produkt",
+  },
+  "Make it useful": {
+    en: "Make it useful",
+    zh: "完善实用内容",
+    de: "Nützliche Inhalte bereitstellen",
+  },
+  "Add guides, FAQs, and product stories": {
+    en: "Add guides, FAQs, and product stories",
+    zh: "添加指南、常见问题和产品故事",
+    de: "Anleitungen, FAQs und Produktgeschichten ergänzen",
+  },
+  "Build your community": {
+    en: "Build your community",
+    zh: "建立品牌社区",
+    de: "Ihre Community aufbauen",
+  },
+  "Bring your customers closer": {
+    en: "Bring your customers closer",
+    zh: "拉近与客户的距离",
+    de: "Nähe zu Ihren Kunden schaffen",
+  },
+  Completed: {
+    en: "Completed",
+    zh: "已完成",
+    de: "Abgeschlossen",
+  },
+  "Explore consumer experience": {
+    en: "Explore consumer experience",
+    zh: "查看消费者体验",
+    de: "Kundenerlebnis ansehen",
+  },
+  "Designed for the European market": {
+    en: "Designed for the European market",
+    zh: "面向欧洲市场",
+    de: "Für den europäischen Markt",
+  },
+  "Your products": {
+    en: "Your products",
+    zh: "您的产品",
+    de: "Ihre Produkte",
+  },
+  "Digital identities that connect your brand to your customers": {
+    en: "Digital identities that connect your brand to your customers",
+    zh: "用数字身份连接品牌与客户",
+    de: "Digitale Identitäten verbinden Ihre Marke mit Kunden",
+  },
+  "Add product": {
+    en: "Add product",
+    zh: "添加产品",
+    de: "Produkt hinzufügen",
+  },
+  PRODUCT: {
+    en: "PRODUCT",
+    zh: "产品",
+    de: "PRODUKT",
+  },
+  "PRODUCT ID / SKU": {
+    en: "PRODUCT ID / SKU",
+    zh: "产品 ID / SKU",
+    de: "PRODUKT-ID / SKU",
+  },
+  MARKET: {
+    en: "MARKET",
+    zh: "市场",
+    de: "MARKT",
+  },
+  STATUS: {
+    en: "STATUS",
+    zh: "状态",
+    de: "STATUS",
+  },
+  SCANS: {
+    en: "SCANS",
+    zh: "扫码次数",
+    de: "SCANS",
+  },
+  "LAST PUBLISHED": {
+    en: "LAST PUBLISHED",
+    zh: "最近发布",
+    de: "ZULETZT VERÖFFENTLICHT",
+  },
+  "· Smart home": {
+    en: "· Smart home",
+    zh: "· 智能家居",
+    de: "· Smart Home",
+  },
+  "🇩🇪 Germany": {
+    en: "🇩🇪 Germany",
+    zh: "🇩🇪 德国",
+    de: "🇩🇪 Deutschland",
+  },
+  "European Union": {
+    en: "European Union",
+    zh: "欧盟",
+    de: "Europäische Union",
+  },
+  "Demo Data": {
+    en: "Demo Data",
+    zh: "演示数据",
+    de: "Demo-Daten",
+  },
+  "Edit product": {
+    en: "Edit product",
+    zh: "编辑产品",
+    de: "Produkt bearbeiten",
+  },
+  "Manage all products": {
+    en: "Manage all products",
+    zh: "管理所有产品",
+    de: "Alle Produkte verwalten",
+  },
+  "Recent activity": {
+    en: "Recent activity",
+    zh: "近期动态",
+    de: "Letzte Aktivitäten",
+  },
+  "The latest moments in your workspace": {
+    en: "The latest moments in your workspace",
+    zh: "工作区最新动态",
+    de: "Neuigkeiten aus Ihrem Arbeitsbereich",
+  },
+  "View all": {
+    en: "View all",
+    zh: "查看全部",
+    de: "Alle ansehen",
+  },
+  "New support request": {
+    en: "New support request",
+    zh: "新的售后请求",
+    de: "Neue Serviceanfrage",
+  },
+  "Warranty registered": {
+    en: "Warranty registered",
+    zh: "已登记保修",
+    de: "Garantie registriert",
+  },
+  "New event registration": {
+    en: "New event registration",
+    zh: "新的活动报名",
+    de: "Neue Veranstaltungsanmeldung",
+  },
+  "Berlin community event": {
+    en: "Berlin community event",
+    zh: "柏林社区活动",
+    de: "Community-Veranstaltung Berlin",
+  },
+  "LOOKING AHEAD": {
+    en: "LOOKING AHEAD",
+    zh: "展望未来",
+    de: "AUSBLICK",
+  },
+  "A more transparent product future.": {
+    en: "A more transparent product future.",
+    zh: "迈向更透明的产品未来。",
+    de: "Eine transparentere Produktzukunft.",
+  },
+  "Start organizing your product information for the next chapter of digital product passports.": {
+    en: "Start organizing your product information for the next chapter of digital product passports.",
+    zh: "整理产品信息，为数字产品护照的未来做好准备。",
+    de: "Ordnen Sie Ihre Produktinformationen für das nächste Kapitel digitaler Produktpässe.",
+  },
+  "Explore DPP Ready": {
+    en: "Explore DPP Ready",
+    zh: "查看 DPP Ready",
+    de: "DPP Ready entdecken",
+  },
+  "Demo only. Not a declaration of EU DPP compliance.": {
+    en: "Demo only. Not a declaration of EU DPP compliance.",
+    zh: "仅为演示，不代表符合欧盟 DPP 法规。",
+    de: "Nur eine Demo. Keine Erklärung zur EU-DPP-Konformität.",
+  },
+  "Product published. Consumer page is now updated.": {
+    en: "Product published. Consumer page is now updated.",
+    zh: "产品已发布，消费者页面已更新。",
+    de: "Produkt veröffentlicht. Die Kundenseite wurde aktualisiert.",
+  },
+  "Draft saved. Consumer page is unchanged.": {
+    en: "Draft saved. Consumer page is unchanged.",
+    zh: "草稿已保存，消费者页面保持不变。",
+    de: "Entwurf gespeichert. Die Kundenseite bleibt unverändert.",
+  },
+  "Choose an image smaller than 1.5 MB for this local demo.": {
+    en: "Choose an image smaller than 1.5 MB for this local demo.",
+    zh: "请为此本地演示选择小于 1.5 MB 的图片。",
+    de: "Wählen Sie für diese lokale Demo ein Bild unter 1,5 MB.",
+  },
+  "Product content": {
+    en: "Product content",
+    zh: "产品内容",
+    de: "Produktinhalte",
+  },
+  "Useful information, in your customers’ own language.": {
+    en: "Useful information, in your customers’ own language.",
+    zh: "用客户的语言提供实用信息。",
+    de: "Nützliche Informationen in der Sprache Ihrer Kunden.",
+  },
+  "One product identity. Every customer touchpoint.": {
+    en: "One product identity. Every customer touchpoint.",
+    zh: "一个产品身份，连接每个客户触点。",
+    de: "Eine Produktidentität für jeden Kundenkontakt.",
+  },
+  "Create product": {
+    en: "Create product",
+    zh: "创建产品",
+    de: "Produkt erstellen",
+  },
+  "Search products": {
+    en: "Search products",
+    zh: "搜索产品",
+    de: "Produkte suchen",
+  },
+  "Search products…": {
+    en: "Search products…",
+    zh: "搜索产品…",
+    de: "Produkte suchen…",
+  },
+  "Unsaved changes": {
+    en: "Unsaved changes",
+    zh: "未保存的修改",
+    de: "Ungespeicherte Änderungen",
+  },
+  "Saved draft": {
+    en: "Saved draft",
+    zh: "已保存草稿",
+    de: "Gespeicherter Entwurf",
+  },
+  "Change image": {
+    en: "Change image",
+    zh: "更换图片",
+    de: "Bild ändern",
+  },
+  "Product name": {
+    en: "Product name",
+    zh: "产品名称",
+    de: "Produktname",
+  },
+  Brand: {
+    en: "Brand",
+    zh: "品牌",
+    de: "Marke",
+  },
+  Model: {
+    en: "Model",
+    zh: "型号",
+    de: "Modell",
+  },
+  "GTIN · Demo Data": {
+    en: "GTIN · Demo Data",
+    zh: "GTIN · 演示数据",
+    de: "GTIN · Demo-Daten",
+  },
+  "ASIN · Demo Data": {
+    en: "ASIN · Demo Data",
+    zh: "ASIN · 演示数据",
+    de: "ASIN · Demo-Daten",
+  },
+  "Brand serial number · Demo Data": {
+    en: "Brand serial number · Demo Data",
+    zh: "品牌自有序列号 · 演示数据",
+    de: "Marken-Seriennummer · Demo-Daten",
+  },
+  "Localized content": {
+    en: "Localized content",
+    zh: "多语言内容",
+    de: "Mehrsprachige Inhalte",
+  },
+  "Content language": {
+    en: "Content language",
+    zh: "内容语言",
+    de: "Inhaltssprache",
+  },
+  English: {
+    en: "English",
+    zh: "英语",
+    de: "Englisch",
+  },
+  Deutsch: {
+    en: "Deutsch",
+    zh: "德语",
+    de: "Deutsch",
+  },
+  "Product description": {
+    en: "Product description",
+    zh: "产品描述",
+    de: "Produktbeschreibung",
+  },
+  "User manual · Instructions or HTTPS link": {
+    en: "User manual · Instructions or HTTPS link",
+    zh: "产品说明书 · 使用说明或 HTTPS 链接",
+    de: "Bedienungsanleitung · Text oder HTTPS-Link",
+  },
+  "Frequently asked questions": {
+    en: "Frequently asked questions",
+    zh: "常见问题",
+    de: "Häufige Fragen",
+  },
+  "User manual": {
+    en: "User manual",
+    zh: "产品说明书",
+    de: "Bedienungsanleitung",
+  },
+  "Video link · HTTPS URL (optional)": {
+    en: "Video link · HTTPS URL (optional)",
+    zh: "视频链接 · HTTPS 地址（可选）",
+    de: "Videolink · HTTPS-URL (optional)",
+  },
+  "Only published versions appear on consumer pages.": {
+    en: "Only published versions appear on consumer pages.",
+    zh: "消费者页面仅显示已发布版本。",
+    de: "Auf Kundenseiten erscheinen nur veröffentlichte Versionen.",
+  },
+  "Save draft": {
+    en: "Save draft",
+    zh: "保存草稿",
+    de: "Entwurf speichern",
+  },
+  "Publish product": {
+    en: "Publish product",
+    zh: "发布产品",
+    de: "Produkt veröffentlichen",
+  },
+  "View published product": {
+    en: "View published product",
+    zh: "查看已发布产品",
+    de: "Veröffentlichtes Produkt ansehen",
+  },
+  "All records": {
+    en: "All records",
+    zh: "全部记录",
+    de: "Alle Einträge",
+  },
+  Warranty: {
+    en: "Warranty",
+    zh: "保修",
+    de: "Garantie",
+  },
+  Support: {
+    en: "Support",
+    zh: "售后请求",
+    de: "Service",
+  },
+  Event: {
+    en: "Event",
+    zh: "活动",
+    de: "Veranstaltung",
+  },
+  Published: {
+    en: "Published",
+    zh: "已发布",
+    de: "Veröffentlicht",
+  },
+  Draft: {
+    en: "Draft",
+    zh: "草稿",
+    de: "Entwurf",
+  },
+  New: {
+    en: "New",
+    zh: "新建",
+    de: "Neu",
+  },
+  "In progress": {
+    en: "In progress",
+    zh: "处理中",
+    de: "In Bearbeitung",
+  },
+  Resolved: {
+    en: "Resolved",
+    zh: "已解决",
+    de: "Erledigt",
+  },
+  Closed: {
+    en: "Closed",
+    zh: "已关闭",
+    de: "Geschlossen",
+  },
+  Active: {
+    en: "Active",
+    zh: "已授权",
+    de: "Aktiv",
+  },
+  Withdrawn: {
+    en: "Withdrawn",
+    zh: "已撤回",
+    de: "Widerrufen",
+  },
+  "Thoughtful support, beyond the first purchase.": {
+    en: "Thoughtful support, beyond the first purchase.",
+    zh: "贴心支持，不止于初次购买。",
+    de: "Aufmerksamer Service über den Kauf hinaus.",
+  },
+  "Search customer records": {
+    en: "Search customer records",
+    zh: "搜索客户记录",
+    de: "Kundeneinträge suchen",
+  },
+  "Search demo records…": {
+    en: "Search demo records…",
+    zh: "搜索演示记录…",
+    de: "Demo-Einträge suchen…",
+  },
+  RECORD: {
+    en: "RECORD",
+    zh: "记录",
+    de: "EINTRAG",
+  },
+  "CUSTOMER · DEMO DATA": {
+    en: "CUSTOMER · DEMO DATA",
+    zh: "客户 · 演示数据",
+    de: "KUNDE · DEMO-DATEN",
+  },
+  TYPE: {
+    en: "TYPE",
+    zh: "类型",
+    de: "TYP",
+  },
+  DETAILS: {
+    en: "DETAILS",
+    zh: "详情",
+    de: "DETAILS",
+  },
+  DATE: {
+    en: "DATE",
+    zh: "日期",
+    de: "DATUM",
+  },
+  "Ticket status updated": {
+    en: "Ticket status updated",
+    zh: "售后请求状态已更新",
+    de: "Anfragestatus aktualisiert",
+  },
+  "No records match your search.": {
+    en: "No records match your search.",
+    zh: "没有匹配的记录。",
+    de: "Keine passenden Einträge gefunden.",
+  },
+  "Warranty registration never creates marketing consent. Marketing permissions are managed separately.":
+    {
+      en: "Warranty registration never creates marketing consent. Marketing permissions are managed separately.",
+      zh: "保修登记不会自动授予营销授权，营销权限独立管理。",
+      de: "Eine Garantieregistrierung erteilt keine Marketing-Einwilligung. Diese wird separat verwaltet.",
+    },
+  Events: {
+    en: "Events",
+    zh: "活动",
+    de: "Veranstaltungen",
+  },
+  Registrations: {
+    en: "Registrations",
+    zh: "报名记录",
+    de: "Anmeldungen",
+  },
+  "Marketing permissions": {
+    en: "Marketing permissions",
+    zh: "营销授权",
+    de: "Marketing-Einwilligungen",
+  },
+  "Event published": {
+    en: "Event published",
+    zh: "活动已发布",
+    de: "Veranstaltung veröffentlicht",
+  },
+  "Event draft saved": {
+    en: "Event draft saved",
+    zh: "活动草稿已保存",
+    de: "Veranstaltungsentwurf gespeichert",
+  },
+  "Meaningful local moments. Lasting brand connections.": {
+    en: "Meaningful local moments. Lasting brand connections.",
+    zh: "有意义的本地相聚，长久的品牌连接。",
+    de: "Lokale Begegnungen. Dauerhafte Markenverbindungen.",
+  },
+  "Create event": {
+    en: "Create event",
+    zh: "创建活动",
+    de: "Veranstaltung erstellen",
+  },
+  registrations: {
+    en: "registrations",
+    zh: "人报名",
+    de: "Anmeldungen",
+  },
+  "Edit event": {
+    en: "Edit event",
+    zh: "编辑活动",
+    de: "Veranstaltung bearbeiten",
+  },
+  "Event closed. Registrations are disabled.": {
+    en: "Event closed. Registrations are disabled.",
+    zh: "活动已关闭，报名已停用。",
+    de: "Veranstaltung geschlossen. Anmeldungen sind deaktiviert.",
+  },
+  "Close event": {
+    en: "Close event",
+    zh: "关闭活动",
+    de: "Veranstaltung schließen",
+  },
+  "EMAIL · DEMO DATA": {
+    en: "EMAIL · DEMO DATA",
+    zh: "邮箱 · 演示数据",
+    de: "E-MAIL · DEMO-DATEN",
+  },
+  ATTENDEE: {
+    en: "ATTENDEE",
+    zh: "参与者",
+    de: "TEILNEHMER",
+  },
+  CONSENT: {
+    en: "CONSENT",
+    zh: "授权",
+    de: "EINWILLIGUNG",
+  },
+  EVENT: {
+    en: "EVENT",
+    zh: "活动",
+    de: "VERANSTALTUNG",
+  },
+  UPDATED: {
+    en: "UPDATED",
+    zh: "更新时间",
+    de: "AKTUALISIERT",
+  },
+  "Fictional local community event · Demo Data": {
+    en: "Fictional local community event · Demo Data",
+    zh: "虚构本地社区活动 · 演示数据",
+    de: "Fiktive lokale Community-Veranstaltung · Demo-Daten",
+  },
+  "Event language": {
+    en: "Event language",
+    zh: "活动内容语言",
+    de: "Veranstaltungssprache",
+  },
+  "Event title": {
+    en: "Event title",
+    zh: "活动标题",
+    de: "Veranstaltungstitel",
+  },
+  City: {
+    en: "City",
+    zh: "城市",
+    de: "Stadt",
+  },
+  Date: {
+    en: "Date",
+    zh: "日期",
+    de: "Datum",
+  },
+  Description: {
+    en: "Description",
+    zh: "描述",
+    de: "Beschreibung",
+  },
+  "Publish event": {
+    en: "Publish event",
+    zh: "发布活动",
+    de: "Veranstaltung veröffentlichen",
+  },
+  "Product transparency": {
+    en: "Product transparency",
+    zh: "产品透明度",
+    de: "Produkttransparenz",
+  },
+  "A clear identity. An honest verification journey.": {
+    en: "A clear identity. An honest verification journey.",
+    zh: "清晰的产品身份，诚实的验证体验。",
+    de: "Klare Identität. Ehrliche Verifizierung.",
+  },
+  "Official Transparency codes are issued through Amazon’s program. Consumers should scan an official code using the Amazon Shopping or Transparency app.":
+    {
+      en: "Official Transparency codes are issued through Amazon’s program. Consumers should scan an official code using the Amazon Shopping or Transparency app.",
+      zh: "官方透明码由 Amazon 项目提供。消费者应通过 Amazon Shopping 或 Transparency 应用扫描官方代码。",
+      de: "Offizielle Transparency-Codes werden über Amazons Programm ausgegeben. Verbraucher sollten sie mit der Amazon Shopping- oder Transparency-App scannen.",
+    },
+  "No Amazon API connected. No official verification result is provided.": {
+    en: "No Amazon API connected. No official verification result is provided.",
+    zh: "未连接 Amazon 接口，不提供官方验证结果。",
+    de: "Keine Amazon-API verbunden. Kein offizielles Prüfergebnis verfügbar.",
+  },
+  "Amazon official information": {
+    en: "Amazon official information",
+    zh: "Amazon 官方信息",
+    de: "Offizielle Amazon-Informationen",
+  },
+  "Brand-owned serial codes": {
+    en: "Brand-owned serial codes",
+    zh: "品牌自有序列码",
+    de: "Markeneigene Seriennummern",
+  },
+  "NOVA Home’s demo serial numbers connect products to this digital experience. They are not Amazon Transparency codes and cannot prove authenticity.":
+    {
+      en: "NOVA Home’s demo serial numbers connect products to this digital experience. They are not Amazon Transparency codes and cannot prove authenticity.",
+      zh: "NOVA Home 的演示序列号用于关联数字产品体验，不是 Amazon 官方透明码，也不是真伪证明。",
+      de: "Die Demo-Seriennummern von NOVA Home verknüpfen Produkte mit diesem digitalen Erlebnis. Sie sind keine Amazon Transparency-Codes und kein Echtheitsnachweis.",
+    },
+  "Demo mappings only. A serial match is not official certification.": {
+    en: "Demo mappings only. A serial match is not official certification.",
+    zh: "仅为演示映射，序列号匹配不代表官方认证。",
+    de: "Nur Demo-Zuordnungen. Ein Seriennummernabgleich ist keine offizielle Zertifizierung.",
+  },
+  "Product identity mappings": {
+    en: "Product identity mappings",
+    zh: "产品身份映射",
+    de: "Produktidentitäts-Zuordnungen",
+  },
+  "DEMO DATA": {
+    en: "DEMO DATA",
+    zh: "演示数据",
+    de: "DEMO-DATEN",
+  },
+  "UNIQUE ID": {
+    en: "UNIQUE ID",
+    zh: "唯一 ID",
+    de: "EINDEUTIGE ID",
+  },
+  "SKU / BRAND SERIAL": {
+    en: "SKU / BRAND SERIAL",
+    zh: "SKU / 品牌序列号",
+    de: "SKU / MARKEN-SERIENNUMMER",
+  },
+  "OFFICIAL CODE": {
+    en: "OFFICIAL CODE",
+    zh: "官方代码",
+    de: "OFFIZIELLER CODE",
+  },
+  "Not connected": {
+    en: "Not connected",
+    zh: "未连接",
+    de: "Nicht verbunden",
+  },
+  "Organize today’s product data for tomorrow’s transparency.": {
+    en: "Organize today’s product data for tomorrow’s transparency.",
+    zh: "整理当下产品数据，迎接更透明的未来。",
+    de: "Heutige Produktdaten für die Transparenz von morgen ordnen.",
+  },
+  "DPP Ready is a demonstration of future product passport fields. It does not represent compliance with statutory EU Digital Product Passport requirements.":
+    {
+      en: "DPP Ready is a demonstration of future product passport fields. It does not represent compliance with statutory EU Digital Product Passport requirements.",
+      zh: "DPP Ready 仅演示未来产品护照字段，不代表符合欧盟法定数字产品护照要求。",
+      de: "DPP Ready demonstriert zukünftige Produktpassfelder. Es bedeutet keine Erfüllung der gesetzlichen EU-Anforderungen an digitale Produktpässe.",
+    },
+  "Product information, thoughtfully connected.": {
+    en: "Product information, thoughtfully connected.",
+    zh: "用心连接产品信息。",
+    de: "Produktinformationen sinnvoll vernetzt.",
+  },
+  "Materials, manufacturer and technical specifications in one place.": {
+    en: "Materials, manufacturer and technical specifications in one place.",
+    zh: "材料、制造商与技术规格汇聚于此。",
+    de: "Materialien, Hersteller und technische Daten an einem Ort.",
+  },
+  Product: {
+    en: "Product",
+    zh: "产品",
+    de: "Produkt",
+  },
+  "Technical specifications": {
+    en: "Technical specifications",
+    zh: "技术规格",
+    de: "Technische Daten",
+  },
+  "Materials · Demo Data": {
+    en: "Materials · Demo Data",
+    zh: "材料 · 演示数据",
+    de: "Materialien · Demo-Daten",
+  },
+  "Manufacturer · Demo Data": {
+    en: "Manufacturer · Demo Data",
+    zh: "制造商 · 演示数据",
+    de: "Hersteller · Demo-Daten",
+  },
+  "Carbon footprint · Future field": {
+    en: "Carbon footprint · Future field",
+    zh: "碳足迹 · 未来字段",
+    de: "CO₂-Fußabdruck · Zukünftiges Feld",
+  },
+  "Recyclability · Future field": {
+    en: "Recyclability · Future field",
+    zh: "可回收性 · 未来字段",
+    de: "Recyclingfähigkeit · Zukünftiges Feld",
+  },
+  "EU passport ID · Not assigned": {
+    en: "EU passport ID · Not assigned",
+    zh: "欧盟护照 ID · 未分配",
+    de: "EU-Pass-ID · Nicht vergeben",
+  },
+  "DPP draft saved": {
+    en: "DPP draft saved",
+    zh: "DPP 草稿已保存",
+    de: "DPP-Entwurf gespeichert",
+  },
+  "DPP demo information published": {
+    en: "DPP demo information published",
+    zh: "DPP 演示信息已发布",
+    de: "DPP-Demoinformationen veröffentlicht",
+  },
+  "Browser-local prototype. Data stays on this browser, cannot sync across devices, and is not a production database. Use fictional details only.":
+    {
+      en: "Browser-local prototype. Data stays on this browser, cannot sync across devices, and is not a production database. Use fictional details only.",
+      zh: "浏览器本地原型。数据仅保存在此浏览器中，不跨设备同步，不能代替生产数据库。请仅使用虚构信息。",
+      de: "Browserlokaler Prototyp. Daten bleiben in diesem Browser, ohne geräteübergreifende Synchronisierung oder Produktionsdatenbank. Nur fiktive Angaben verwenden.",
+    },
+  Language: {
+    en: "Language",
+    zh: "语言",
+    de: "Sprache",
+  },
+  Close: {
+    en: "Close",
+    zh: "关闭",
+    de: "Schließen",
+  },
+  "{count} published product": {
+    en: "{count} published product",
+    zh: "{count} 个已发布产品",
+    de: "{count} veröffentlichte Produkte",
+  },
+  "{count} awaiting response": {
+    en: "{count} awaiting response",
+    zh: "{count} 个等待回复",
+    de: "{count} warten auf Antwort",
+  },
+  "{count} live community event": {
+    en: "{count} live community event",
+    zh: "{count} 个进行中的社区活动",
+    de: "{count} aktive Community-Veranstaltungen",
+  },
+  "Step {count}": {
+    en: "Step {count}",
+    zh: "步骤 {count}",
+    de: "Schritt {count}",
+  },
+  "Status {id}": {
+    en: "Status {id}",
+    zh: "状态 {id}",
+    de: "Status {id}",
+  },
+  "Oct 16": {
+    en: "Oct 16",
+    zh: "10月16日",
+    de: "16. Okt.",
+  },
+  "Oct 21": {
+    en: "Oct 21",
+    zh: "10月21日",
+    de: "21. Okt.",
+  },
+  "Oct 26": {
+    en: "Oct 26",
+    zh: "10月26日",
+    de: "26. Okt.",
+  },
+  "Oct 31": {
+    en: "Oct 31",
+    zh: "10月31日",
+    de: "31. Okt.",
+  },
+  "Nov 5": {
+    en: "Nov 5",
+    zh: "11月5日",
+    de: "5. Nov.",
+  },
+  "Nov 10": {
+    en: "Nov 10",
+    zh: "11月10日",
+    de: "10. Nov.",
+  },
+  "Nov 14": {
+    en: "Nov 14",
+    zh: "11月14日",
+    de: "14. Nov.",
+  },
+} as const;
+for (const [key, values] of Object.entries(adminCopy)) {
+  for (const locale of ["en", "zh", "de"] as const) copy[locale][`admin.${key}`] = values[locale];
+}
+
+export function translateAdmin(
+  locale: Locale,
+  key: string,
+  params: Record<string, string | number> = {},
+) {
+  const text = copy[locale][`admin.${key}`] ?? key;
+  return text.replace(/\{(\w+)\}/g, (match, name: string) => String(params[name] ?? match));
+}

@@ -1,7 +1,9 @@
 import type { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { useAdminTranslation } from "./language";
 export function Status({ value }: { value: string }) {
+  const { t } = useAdminTranslation();
   return (
     <span
       className={cn(
@@ -16,7 +18,7 @@ export function Status({ value }: { value: string }) {
       )}
     >
       <span className="size-1.5 rounded-full bg-current" />
-      {value}
+      {t(value)}
     </span>
   );
 }
@@ -44,12 +46,15 @@ export function TextField({
   );
 }
 export function DemoNotice({ consumer = false, text }: { consumer?: boolean; text?: string }) {
+  const { t } = useAdminTranslation();
   return (
     <div className={cn("demo-notice", consumer && "consumer-notice")}>
-      <span className="demo-label">DEMO DATA</span>
+      <span className="demo-label">{t("DEMO DATA")}</span>
       <span>
         {text ||
-          "Browser-local prototype. Data stays on this browser, cannot sync across devices, and is not a production database. Use fictional details only."}
+          t(
+            "Browser-local prototype. Data stays on this browser, cannot sync across devices, and is not a production database. Use fictional details only.",
+          )}
       </span>
     </div>
   );
