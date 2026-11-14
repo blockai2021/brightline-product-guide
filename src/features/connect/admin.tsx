@@ -78,7 +78,10 @@ export function AdminLayout() {
   const [help, setHelp] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { state } = useDemo();
-  const current = nav.find((n) => n.path === path)?.label || "Dashboard";
+  const current =
+    path === "/admin/printing"
+      ? "Print.title"
+      : nav.find((n) => n.path === path)?.label || "Dashboard";
   return (
     <AdminLanguageProvider language={language}>
       <div lang={language} className={cn("admin-shell", collapsed && "sidebar-collapsed")}>

@@ -118,7 +118,7 @@ export function PrintingLabels({ initialProductId }: { initialProductId?: string
   }
   function download(job: PrintJob, file: "data" | "manifest" | "readme") {
     perform(() => {
-      replace(exportPrintJob(job));
+      if (file === "data") replace(exportPrintJob(job));
       downloadFile(
         new Blob([job.files[file]], {
           type: file === "readme" ? "text/plain;charset=utf-8" : "text/csv;charset=utf-8",

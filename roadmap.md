@@ -39,6 +39,6 @@
 
 # Issue #14 / L-009
 
-- [ ] Add product-scoped printing selection and frozen browser-local job records
-- [ ] Add stable CSV packages, manual confirmation, cancellation and identity-preserving reprints
-- [ ] Add limited A4 PDF previews and verify multilingual workflows and unchanged identities
+- [x] Add product-scoped printing selection and frozen browser-local job records
+- [x] Add stable CSV packages, manual confirmation, cancellation and identity-preserving reprints
+- [x] Add limited A4 PDF previews and verify multilingual workflows and unchanged identities

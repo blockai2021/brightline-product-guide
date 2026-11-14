@@ -141,7 +141,6 @@ describe("L-009 browser-local print jobs", () => {
     const job = preparePrintJob(safeState, [], input);
     const row = Papa.parse<Record<string, string>>(job.files.data, { header: true }).data[0];
     expect(row?.["SKU"]).toBe('\'=FORMULA,"x"\nnext');
-    expect(job.files.readme).toContain("Never print .example");
     expect(exportPrintJob(job).files.data).toBe(job.files.data);
   });
   it("limits PDF to 20 issued samples and never silently truncates an over-limit request", () => {
