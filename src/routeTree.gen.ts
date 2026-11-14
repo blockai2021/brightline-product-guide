@@ -19,6 +19,7 @@ import { Route as AdminMarketingRouteImport } from './routes/admin.marketing'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminTransparencyRouteImport } from './routes/admin.transparency'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
+import { Route as R01Gtin21SerialRouteImport } from './routes/01.$gtin.21.$serial'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const PSlugRoute = PSlugRouteImport.update({
   path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const R01Gtin21SerialRoute = R01Gtin21SerialRouteImport.update({
+  id: '/01/$gtin/21/$serial',
+  path: '/01/$gtin/21/$serial',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/01/$gtin/21/$serial': typeof R01Gtin21SerialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -93,6 +100,7 @@ export interface FileRoutesByTo {
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/01/$gtin/21/$serial': typeof R01Gtin21SerialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -106,6 +114,7 @@ export interface FileRoutesById {
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/01/$gtin/21/$serial': typeof R01Gtin21SerialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -120,6 +129,7 @@ export interface FileRouteTypes {
     | '/admin/transparency'
     | '/p/$slug'
     | '/admin/'
+    | '/01/$gtin/21/$serial'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -131,6 +141,7 @@ export interface FileRouteTypes {
     | '/admin/transparency'
     | '/p/$slug'
     | '/admin'
+    | '/01/$gtin/21/$serial'
   id:
     | '__root__'
     | '/'
@@ -143,12 +154,14 @@ export interface FileRouteTypes {
     | '/admin/transparency'
     | '/p/$slug'
     | '/admin/'
+    | '/01/$gtin/21/$serial'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   PSlugRoute: typeof PSlugRoute
+  R01Gtin21SerialRoute: typeof R01Gtin21SerialRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -223,6 +236,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/01/$gtin/21/$serial': {
+      id: '/01/$gtin/21/$serial'
+      path: '/01/$gtin/21/$serial'
+      fullPath: '/01/$gtin/21/$serial'
+      preLoaderRoute: typeof R01Gtin21SerialRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -252,6 +272,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   PSlugRoute: PSlugRoute,
+  R01Gtin21SerialRoute: R01Gtin21SerialRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

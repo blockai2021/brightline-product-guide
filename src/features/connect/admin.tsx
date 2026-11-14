@@ -36,7 +36,16 @@ import { toast } from "sonner";
 import { useDemo } from "./store";
 import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
-import { publishProduct, saveDraft, type Campaign, type Locale, type Product } from "./domain";
+import {
+  buildDigitalLinkPath,
+  isValidAi21Serial,
+  normalizeGtin14,
+  publishProduct,
+  saveDraft,
+  type Campaign,
+  type Locale,
+  type Product,
+} from "./domain";
 import { cn } from "@/lib/utils";
 import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
 import { translateAdmin } from "./translations";
@@ -736,15 +745,15 @@ export function Products({
   }
   function create() {
     const id = `demo-prod-${crypto.randomUUID()}`;
-    const p = {
+    const p: Product = {
       ...structuredClone(demoProduct),
       id,
       slug: `product-${id.slice(-8)}`,
       name: "Untitled product",
       sku: "",
       gtin: "",
+      gtinStatus: "Demo",
       asin: "",
-      serial: "",
     };
     update((s) => saveDraft(s, p));
     setSelected(id);
@@ -882,11 +891,19 @@ export function Products({
                 value={form.asin}
                 onChange={(v) => change("asin", v)}
               />
-              <TextField
-                label={t("Brand serial number · Demo Data")}
-                value={form.serial}
-                onChange={(v) => change("serial", v)}
-              />
+              <Field label={t("GTIN status")}>
+                <select
+                  className="select-control"
+                  value={form.gtinStatus}
+                  onChange={(e) => change("gtinStatus", e.target.value as Product["gtinStatus"])}
+                >
+                  <option value="Demo">{t("Demo · not a formal GS1 claim")}</option>
+                  <option value="Format valid · unverified">
+                    {t("Format valid · unverified")}
+                  </option>
+                  <option value="Verified by GS1">{t("Verified by GS1")}</option>
+                </select>
+              </Field>
             </TabsContent>
             <TabsContent value="content" className="form-grid">
               <div className="col-span-full flex flex-wrap gap-3 items-center justify-between mt-3">
@@ -1063,7 +1080,9 @@ export function AfterSales() {
                 <td>{t(r.kind)}</td>
                 <td className="details-cell">
                   {r.details}
-                  <small>{r.serial}</small>
+                  <small>
+                    {r.serial} · {r.unitId || t("Model-level record")}
+                  </small>
                 </td>
                 <td>{r.date}</td>
                 <td>
@@ -1311,8 +1330,96 @@ export function Marketing() {
   );
 }
 export function Transparency() {
-  const { t, language } = useAdminTranslation();
-  const { state } = useDemo();
+  const { t } = useAdminTranslation();
+  const { state, update } = useDemo();
+  const product = state.products[0]?.draft;
+  const batch = state.batches.find((item) => item.productId === product?.id);
+  const [serial, setSerial] = useState("");
+  function createUnits(serials: string[]) {
+    if (!product || !batch) return;
+    const gtin = normalizeGtin14(product.gtin);
+    if (!gtin) {
+      toast.error(t("Enter a GTIN with a valid check digit before creating units."));
+      return;
+    }
+    const unique = [...new Set(serials)];
+    const valid = unique.filter(isValidAi21Serial);
+    const available = valid.filter(
+      (value) => !state.identities.some((item) => item.gtin === gtin && item.serial === value),
+    );
+    if (!available.length) {
+      toast.error(t("No valid, non-duplicate AI (21) serial numbers found."));
+      return;
+    }
+    const now = new Date().toISOString();
+    const created = available.map((value) => {
+      const unitId = `unit-${crypto.randomUUID()}`;
+      return {
+        unit: {
+          id: unitId,
+          productId: product.id,
+          batchId: batch.id,
+          serial: value,
+          status: "Created" as const,
+          createdAt: now,
+        },
+        identity: {
+          id: `identity-${crypto.randomUUID()}`,
+          unitId,
+          gtin,
+          serial: value,
+          canonicalPath: buildDigitalLinkPath(gtin, value),
+          issuedAt: now,
+        },
+        association: {
+          id: `transparency-${crypto.randomUUID()}`,
+          unitId,
+          state: "Not enrolled" as const,
+          evidence: "Simulated" as const,
+        },
+      };
+    });
+    update((current) => ({
+      ...current,
+      units: [...created.map((item) => item.unit), ...current.units],
+      identities: [...created.map((item) => item.identity), ...current.identities],
+      transparency: [...created.map((item) => item.association), ...current.transparency],
+    }));
+    setSerial("");
+    toast.success(t("{count} unit identities created", { count: created.length }));
+  }
+  async function importCsv(file?: File) {
+    if (!file) return;
+    const rows = (await file.text())
+      .split(/\r?\n/)
+      .map((row) => row.trim())
+      .filter(Boolean);
+    const values = rows[0]?.toLowerCase() === "serial" ? rows.slice(1) : rows;
+    createUnits(values.map((row) => row.split(",")[0]?.trim() || ""));
+  }
+  function exportLabels() {
+    const rows = [
+      "unitId,batch,gtin,serial,digitalLink",
+      ...state.units.map((unit) => {
+        const identity = state.identities.find((item) => item.unitId === unit.id);
+        return [
+          unit.id,
+          batch?.batchNumber || "",
+          identity?.gtin || "",
+          unit.serial,
+          identity?.canonicalPath || "",
+        ].join(",");
+      }),
+    ];
+    const url = URL.createObjectURL(
+      new Blob([rows.join("\n")], { type: "text/csv;charset=utf-8" }),
+    );
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = "demo-unit-labels.csv";
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
   return (
     <>
       <PageHeading
@@ -1355,6 +1462,42 @@ export function Transparency() {
           </span>
         </section>
       </div>
+      <section className="info-block mt-7">
+        <span className="eyebrow">{t("UNIT IDENTITIES · DEMO")}</span>
+        <h2>{t("Create or import AI (21) serial numbers")}</h2>
+        <p>
+          {t(
+            "The demo checks GTIN check digits, AI (21) syntax and duplicate GTIN + serial combinations. It does not verify GS1 ownership or Amazon enrollment.",
+          )}
+        </p>
+        <div className="flex gap-2 flex-wrap mt-5 items-end">
+          <TextField
+            label={t("Serial · 1–20 GS1 characters")}
+            value={serial}
+            onChange={setSerial}
+            placeholder="NH26000129"
+          />
+          <Button onClick={() => createUnits([serial])} disabled={!serial}>
+            <Plus />
+            {t("Create unit")}
+          </Button>
+          <Button variant="outline" asChild>
+            <label>
+              {t("Import CSV")}
+              <input
+                className="sr-only"
+                type="file"
+                accept=".csv,text/csv"
+                onChange={(event) => void importCsv(event.target.files?.[0])}
+              />
+            </label>
+          </Button>
+          <Button variant="outline" onClick={exportLabels}>
+            <ArrowDownToLine />
+            {t("Export label CSV")}
+          </Button>
+        </div>
+      </section>
       <h2 className="mt-8 mb-5">
         {t("Product identity mappings")}
         <span className="demo-label">{t("DEMO DATA")}</span>
@@ -1371,21 +1514,37 @@ export function Transparency() {
             </tr>
           </thead>
           <tbody>
-            {state.products.map((p) => (
-              <tr key={p.draft.id}>
-                <td>{p.draft.name}</td>
-                <td className="table-mono">{p.draft.id}</td>
-                <td>
-                  {p.draft.asin}
-                  <small>{p.draft.gtin}</small>
-                </td>
-                <td>
-                  {p.draft.sku}
-                  <small>{p.draft.serial}</small>
-                </td>
-                <td>{t("Not connected")}</td>
-              </tr>
-            ))}
+            {state.units.map((unit) => {
+              const product = state.products.find((p) => p.draft.id === unit.productId)?.draft;
+              const identity = state.identities.find((item) => item.unitId === unit.id);
+              const association = state.transparency.find((item) => item.unitId === unit.id);
+              return (
+                <tr key={unit.id}>
+                  <td>{product?.name || "—"}</td>
+                  <td className="table-mono">
+                    {identity ? (
+                      <a className="section-link" href={identity.canonicalPath}>
+                        {unit.id}
+                      </a>
+                    ) : (
+                      unit.id
+                    )}
+                  </td>
+                  <td>
+                    {product?.asin || "—"}
+                    <small>{identity?.gtin || product?.gtin || "—"}</small>
+                  </td>
+                  <td>
+                    {product?.sku || "—"}
+                    <small>{unit.serial}</small>
+                  </td>
+                  <td>
+                    {t(association?.state || "Not enrolled")}
+                    <small>{t(association?.evidence || "Simulated")}</small>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
       </div>

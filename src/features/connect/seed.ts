@@ -1,5 +1,5 @@
 import purifierImage from "@/assets/airpure-studio.jpg";
-import type { DemoState, Product } from "./domain";
+import { buildDigitalLinkPath, type DemoState, type Product, type ProductUnit } from "./domain";
 export { purifierImage };
 export const demoProduct: Product = {
   id: "demo-prod-airpure-001",
@@ -8,9 +8,9 @@ export const demoProduct: Product = {
   brand: "NOVA Home",
   model: "APM-100",
   sku: "DE-APM-001",
-  gtin: "DEMO-04012345678901",
+  gtin: "04012345678901",
+  gtinStatus: "Demo",
   asin: "DEMO-B0NOVA001",
-  serial: "DEMO-NH-2026-000128",
   image: purifierImage,
   description: {
     en: "A little quieter. A lot fresher. Meet your everyday companion for cleaner air, thoughtfully designed for your home.",
@@ -33,9 +33,56 @@ export const demoProduct: Product = {
   specs: "25 m² · 24 W · 22–48 dB · 220–240 V · Demo Data",
   publishedAt: "2026-11-12T10:00:00Z",
 };
+const demoUnits: ProductUnit[] = ["000128", "000125", "000120", "000119"].map((suffix) => ({
+  id: `demo-unit-${suffix}`,
+  productId: demoProduct.id,
+  batchId: "demo-batch-2026-11",
+  serial: `NH26${suffix}`,
+  status: "Activated",
+  createdAt: "2026-11-12T10:00:00Z",
+}));
 export function initialState(): DemoState {
   return {
+    schemaVersion: 2,
     products: [{ draft: structuredClone(demoProduct), published: structuredClone(demoProduct) }],
+    contents: [
+      {
+        id: "demo-content-airpure-v1",
+        productId: demoProduct.id,
+        version: 1,
+        state: "Published",
+        description: structuredClone(demoProduct.description),
+        manual: structuredClone(demoProduct.manual),
+        faq: structuredClone(demoProduct.faq),
+        video: demoProduct.video,
+        createdAt: "2026-11-12T10:00:00Z",
+        publishedAt: "2026-11-12T10:00:00Z",
+      },
+    ],
+    batches: [
+      {
+        id: "demo-batch-2026-11",
+        productId: demoProduct.id,
+        batchNumber: "DEMO-2026-11",
+        productionDate: "2026-11-01",
+        status: "Active",
+      },
+    ],
+    units: demoUnits,
+    identities: demoUnits.map((unit) => ({
+      id: `identity-${unit.id}`,
+      unitId: unit.id,
+      gtin: demoProduct.gtin,
+      serial: unit.serial,
+      canonicalPath: buildDigitalLinkPath(demoProduct.gtin, unit.serial),
+      issuedAt: unit.createdAt,
+    })),
+    transparency: demoUnits.map((unit) => ({
+      id: `transparency-${unit.id}`,
+      unitId: unit.id,
+      state: "Not enrolled",
+      evidence: "Simulated",
+    })),
     visits: 1248,
     campaigns: [
       {
@@ -91,9 +138,10 @@ export function initialState(): DemoState {
       {
         id: "DEMO-1042",
         productId: demoProduct.id,
+        unitId: "demo-unit-000128",
         name: "Demo · Alex M.",
         email: "alex@example.test",
-        serial: demoProduct.serial,
+        serial: "NH26000128",
         date: "2026-11-14",
         kind: "Support",
         details: "Filter replacement question",
@@ -102,9 +150,10 @@ export function initialState(): DemoState {
       {
         id: "DEMO-1041",
         productId: demoProduct.id,
+        unitId: "demo-unit-000125",
         name: "Demo · Emma K.",
         email: "emma@example.test",
-        serial: "DEMO-NH-2026-000125",
+        serial: "NH26000125",
         date: "2026-11-13",
         kind: "Warranty",
         details: "Purchase date: 2026-11-10",
@@ -113,9 +162,10 @@ export function initialState(): DemoState {
       {
         id: "DEMO-1040",
         productId: demoProduct.id,
+        unitId: "demo-unit-000120",
         name: "Demo · Leon S.",
         email: "leon@example.test",
-        serial: "DEMO-NH-2026-000120",
+        serial: "NH26000120",
         date: "2026-11-13",
         kind: "Event",
         details: "A breath of fresh air, Berlin",
@@ -125,9 +175,10 @@ export function initialState(): DemoState {
       {
         id: "DEMO-1039",
         productId: demoProduct.id,
+        unitId: "demo-unit-000119",
         name: "Demo · Mia W.",
         email: "mia@example.test",
-        serial: "DEMO-NH-2026-000119",
+        serial: "NH26000119",
         date: "2026-11-12",
         kind: "Support",
         details: "Getting started with sleep mode",

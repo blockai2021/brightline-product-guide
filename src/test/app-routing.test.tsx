@@ -27,4 +27,13 @@ describe("App routing", () => {
       expect(result.options.search).toEqual({ tab: "content" });
     }
   });
+  it("matches the compound GTIN and serial identity route", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    const matches = router.matchRoutes("/01/04012345678901/21/NH26000128");
+    expect(matches.at(-1)?.routeId).toBe("/01/$gtin/21/$serial");
+    expect(matches.at(-1)?.params).toMatchObject({
+      gtin: "04012345678901",
+      serial: "NH26000128",
+    });
+  });
 });
