@@ -37,9 +37,8 @@ import { useDemo } from "./store";
 import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
 import {
-  buildDigitalLinkPath,
-  isValidAi21Serial,
-  normalizeGtin14,
+  assertIssuedGtinUnchanged,
+  createProductUnits,
   publishProduct,
   saveDraft,
   type Campaign,
@@ -732,6 +731,12 @@ export function Products({
     setDirty(true);
   };
   function save(publish = false) {
+    try {
+      assertIssuedGtinUnchanged(state, form);
+    } catch {
+      toast.error(t("GTIN cannot change after unit identities have been issued."));
+      return;
+    }
     update((s) => {
       const draft = saveDraft(s, form);
       return publish ? publishProduct(draft, form) : draft;
@@ -755,7 +760,21 @@ export function Products({
       gtinStatus: "Demo",
       asin: "",
     };
-    update((s) => saveDraft(s, p));
+    update((s) => {
+      const next = saveDraft(s, p);
+      return {
+        ...next,
+        batches: [
+          ...next.batches,
+          {
+            id: `demo-batch-${crypto.randomUUID()}`,
+            productId: id,
+            batchNumber: "DEMO-NEW",
+            status: "Draft",
+          },
+        ],
+      };
+    });
     setSelected(id);
     setForm(p);
     setDirty(false);
@@ -885,6 +904,12 @@ export function Products({
                 label={t("GTIN · Demo Data")}
                 value={form.gtin}
                 onChange={(v) => change("gtin", v)}
+                disabled={state.units.some((unit) => unit.productId === form.id)}
+                title={
+                  state.units.some((unit) => unit.productId === form.id)
+                    ? t("GTIN is locked after unit identities are issued.")
+                    : undefined
+                }
               />
               <TextField
                 label={t("ASIN · Demo Data")}
@@ -1332,61 +1357,38 @@ export function Marketing() {
 export function Transparency() {
   const { t } = useAdminTranslation();
   const { state, update } = useDemo();
-  const product = state.products[0]?.draft;
-  const batch = state.batches.find((item) => item.productId === product?.id);
+  const [productId, setProductId] = useState(state.products[0]?.draft.id || "");
+  const batches = state.batches.filter((item) => item.productId === productId);
+  const [batchId, setBatchId] = useState(batches[0]?.id || "");
+  const product = state.products.find((entry) => entry.draft.id === productId)?.draft;
   const [serial, setSerial] = useState("");
+  useEffect(() => {
+    if (!state.products.some((entry) => entry.draft.id === productId))
+      setProductId(state.products[0]?.draft.id || "");
+  }, [productId, state.products]);
+  useEffect(() => {
+    if (!batches.some((batch) => batch.id === batchId)) setBatchId(batches[0]?.id || "");
+  }, [batchId, batches]);
   function createUnits(serials: string[]) {
-    if (!product || !batch) return;
-    const gtin = normalizeGtin14(product.gtin);
-    if (!gtin) {
-      toast.error(t("Enter a GTIN with a valid check digit before creating units."));
-      return;
+    try {
+      const result = createProductUnits(state, { productId, batchId, serials });
+      if (result.created.length) {
+        update(() => result.state);
+        setSerial("");
+        toast.success(
+          t("{count} unit identities created", { count: result.created.length }) +
+            (result.rejected.length ? ` · ${result.rejected.length} ${t("rejected")}` : ""),
+        );
+      } else {
+        toast.error(result.rejected.map((item) => item.reason).join(" · "));
+      }
+    } catch (error) {
+      toast.error(
+        error instanceof Error && error.message === "INVALID_GTIN"
+          ? t("Enter a GTIN with a valid check digit before creating units.")
+          : t("Select a product and one of its batches."),
+      );
     }
-    const unique = [...new Set(serials)];
-    const valid = unique.filter(isValidAi21Serial);
-    const available = valid.filter(
-      (value) => !state.identities.some((item) => item.gtin === gtin && item.serial === value),
-    );
-    if (!available.length) {
-      toast.error(t("No valid, non-duplicate AI (21) serial numbers found."));
-      return;
-    }
-    const now = new Date().toISOString();
-    const created = available.map((value) => {
-      const unitId = `unit-${crypto.randomUUID()}`;
-      return {
-        unit: {
-          id: unitId,
-          productId: product.id,
-          batchId: batch.id,
-          serial: value,
-          status: "Created" as const,
-          createdAt: now,
-        },
-        identity: {
-          id: `identity-${crypto.randomUUID()}`,
-          unitId,
-          gtin,
-          serial: value,
-          canonicalPath: buildDigitalLinkPath(gtin, value),
-          issuedAt: now,
-        },
-        association: {
-          id: `transparency-${crypto.randomUUID()}`,
-          unitId,
-          state: "Not enrolled" as const,
-          evidence: "Simulated" as const,
-        },
-      };
-    });
-    update((current) => ({
-      ...current,
-      units: [...created.map((item) => item.unit), ...current.units],
-      identities: [...created.map((item) => item.identity), ...current.identities],
-      transparency: [...created.map((item) => item.association), ...current.transparency],
-    }));
-    setSerial("");
-    toast.success(t("{count} unit identities created", { count: created.length }));
   }
   async function importCsv(file?: File) {
     if (!file) return;
@@ -1398,13 +1400,19 @@ export function Transparency() {
     createUnits(values.map((row) => row.split(",")[0]?.trim() || ""));
   }
   function exportLabels() {
+    const units = state.units.filter((unit) => unit.productId === productId);
     const rows = [
-      "unitId,batch,gtin,serial,digitalLink",
-      ...state.units.map((unit) => {
+      "unitId,productId,product,batchId,batch,gtin,serial,digitalLink",
+      ...units.map((unit) => {
         const identity = state.identities.find((item) => item.unitId === unit.id);
+        const owner = state.products.find((entry) => entry.draft.id === unit.productId)?.draft;
+        const ownerBatch = state.batches.find((item) => item.id === unit.batchId);
         return [
           unit.id,
-          batch?.batchNumber || "",
+          unit.productId,
+          owner?.name || "",
+          unit.batchId,
+          ownerBatch?.batchNumber || "",
           identity?.gtin || "",
           unit.serial,
           identity?.canonicalPath || "",
@@ -1471,6 +1479,32 @@ export function Transparency() {
           )}
         </p>
         <div className="flex gap-2 flex-wrap mt-5 items-end">
+          <Field label={t("Product")}>
+            <select
+              className="select-control"
+              value={productId}
+              onChange={(event) => setProductId(event.target.value)}
+            >
+              {state.products.map((entry) => (
+                <option key={entry.draft.id} value={entry.draft.id}>
+                  {entry.draft.name} · {entry.draft.model}
+                </option>
+              ))}
+            </select>
+          </Field>
+          <Field label={t("Batch")}>
+            <select
+              className="select-control"
+              value={batchId}
+              onChange={(event) => setBatchId(event.target.value)}
+            >
+              {batches.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.batchNumber}
+                </option>
+              ))}
+            </select>
+          </Field>
           <TextField
             label={t("Serial · 1–20 GS1 characters")}
             value={serial}
@@ -1514,37 +1548,39 @@ export function Transparency() {
             </tr>
           </thead>
           <tbody>
-            {state.units.map((unit) => {
-              const product = state.products.find((p) => p.draft.id === unit.productId)?.draft;
-              const identity = state.identities.find((item) => item.unitId === unit.id);
-              const association = state.transparency.find((item) => item.unitId === unit.id);
-              return (
-                <tr key={unit.id}>
-                  <td>{product?.name || "—"}</td>
-                  <td className="table-mono">
-                    {identity ? (
-                      <a className="section-link" href={identity.canonicalPath}>
-                        {unit.id}
-                      </a>
-                    ) : (
-                      unit.id
-                    )}
-                  </td>
-                  <td>
-                    {product?.asin || "—"}
-                    <small>{identity?.gtin || product?.gtin || "—"}</small>
-                  </td>
-                  <td>
-                    {product?.sku || "—"}
-                    <small>{unit.serial}</small>
-                  </td>
-                  <td>
-                    {t(association?.state || "Not enrolled")}
-                    <small>{t(association?.evidence || "Simulated")}</small>
-                  </td>
-                </tr>
-              );
-            })}
+            {state.units
+              .filter((unit) => unit.productId === productId)
+              .map((unit) => {
+                const product = state.products.find((p) => p.draft.id === unit.productId)?.draft;
+                const identity = state.identities.find((item) => item.unitId === unit.id);
+                const association = state.transparency.find((item) => item.unitId === unit.id);
+                return (
+                  <tr key={unit.id}>
+                    <td>{product?.name || "—"}</td>
+                    <td className="table-mono">
+                      {identity ? (
+                        <a className="section-link" href={identity.canonicalPath}>
+                          {unit.id}
+                        </a>
+                      ) : (
+                        unit.id
+                      )}
+                    </td>
+                    <td>
+                      {product?.asin || "—"}
+                      <small>{identity?.gtin || product?.gtin || "—"}</small>
+                    </td>
+                    <td>
+                      {product?.sku || "—"}
+                      <small>{unit.serial}</small>
+                    </td>
+                    <td>
+                      {t(association?.state || "Not enrolled")}
+                      <small>{t(association?.evidence || "Simulated")}</small>
+                    </td>
+                  </tr>
+                );
+              })}
           </tbody>
         </table>
       </div>
