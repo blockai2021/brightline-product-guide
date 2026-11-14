@@ -180,6 +180,15 @@ describe("product import preview and apply", () => {
       action: "conflict",
       issues: [{ code: "EXTERNAL_ID_CONFLICT" }],
     });
+    const wrongBrand = parseProductCsv(
+      [header, csvRow({ external: "EXT-1", sku: demoProduct.sku, brand: "Another Brand" })].join(
+        "\n",
+      ),
+    );
+    expect(previewProductImport(state, wrongBrand, options()).rows[0]).toMatchObject({
+      action: "conflict",
+      issues: [{ code: "EXTERNAL_ID_CONFLICT" }],
+    });
   });
 
   it("does not clear omitted or blank fields and updates languages independently", () => {
@@ -226,7 +235,7 @@ describe("product import preview and apply", () => {
     ).toBe("");
   });
 
-  it("rejects invalid GTINs, duplicate keys and cross-brand SKU conflicts", () => {
+  it("rejects invalid GTINs and duplicate controlled keys", () => {
     const invalid = parseProductCsv(
       [
         header,
@@ -240,13 +249,121 @@ describe("product import preview and apply", () => {
     expect(codes).toContain("INVALID_GTIN");
     expect(codes).toContain("DUPLICATE_EXTERNAL_ID");
     expect(codes).toContain("DUPLICATE_SKU");
+  });
 
-    const crossBrand = parseProductCsv(
-      [header, csvRow({ sku: demoProduct.sku, brand: "Another Brand" })].join("\n"),
+  it("allows the same SKU across brands and only updates the matching brand", () => {
+    const table = parseProductCsv(
+      [
+        header,
+        csvRow({ external: "BRAND-A-1", sku: "SHARED-1", brand: "Brand A", name: "A" }),
+        csvRow({ external: "BRAND-B-1", sku: "SHARED-1", brand: "Brand B", name: "B" }),
+      ].join("\n"),
     );
-    expect(previewProductImport(initialState(), crossBrand, options()).rows[0]).toMatchObject({
+    const empty = emptyCatalogState();
+    const plan = previewProductImport(empty, table, options());
+    expect(plan.counts).toMatchObject({ create: 2, conflict: 0, error: 0 });
+    let id = 0;
+    const created = applyProductImport(empty, plan, {
+      confirmed: true,
+      createId: () => String(++id),
+    });
+    expect(created.state.products.map((entry) => [entry.draft.brand, entry.draft.sku])).toEqual([
+      ["Brand A", "SHARED-1"],
+      ["Brand B", "SHARED-1"],
+    ]);
+
+    const update = parseProductCsv(
+      [header, csvRow({ sku: "SHARED-1", brand: "Brand B", name: "B updated" })].join("\n"),
+    );
+    const updatePlan = previewProductImport(created.state, update, options("update-only"));
+    expect(updatePlan.rows[0]).toMatchObject({
+      action: "update",
+      productId: "import-2",
+    });
+    const updated = applyProductImport(created.state, updatePlan, { confirmed: true });
+    expect(
+      updated.state.products.find((entry) => entry.draft.brand === "Brand A")?.draft.name,
+    ).toBe("A");
+    expect(
+      updated.state.products.find((entry) => entry.draft.brand === "Brand B")?.draft.name,
+    ).toBe("B updated");
+  });
+
+  it("still rejects GTIN reuse when different brands share a SKU", () => {
+    const existing = {
+      ...emptyCatalogState(),
+      products: [{ draft: { ...structuredClone(demoProduct), id: "brand-a", sku: "SHARED-2" } }],
+    };
+    const table = parseProductCsv(
+      [
+        header,
+        csvRow({
+          sku: "SHARED-2",
+          brand: "Brand B",
+          name: "Brand B product",
+          gtin: demoProduct.gtin,
+        }),
+      ].join("\n"),
+    );
+    expect(previewProductImport(existing, table, options()).rows[0]).toMatchObject({
       action: "conflict",
-      issues: [{ code: "CROSS_BRAND_SKU_CONFLICT" }],
+      issues: [{ code: "GTIN_CONFLICT" }],
+    });
+  });
+
+  it("treats published snapshots and issued identities as GTIN owners", () => {
+    const state = {
+      ...emptyCatalogState(),
+      products: [
+        {
+          draft: { ...structuredClone(demoProduct), id: "published-owner", gtin: "09506000134352" },
+          published: { ...structuredClone(demoProduct), id: "published-owner" },
+        },
+      ],
+    };
+    const table = parseProductCsv(
+      [
+        header,
+        csvRow({
+          sku: "NEW-SKU",
+          brand: "Brand B",
+          name: "New product",
+          gtin: demoProduct.gtin,
+        }),
+      ].join("\n"),
+    );
+    expect(previewProductImport(state, table, options()).rows[0]).toMatchObject({
+      action: "conflict",
+      issues: [{ code: "GTIN_CONFLICT" }],
+    });
+
+    const identityOnly = {
+      ...state,
+      products: [],
+      units: [
+        {
+          id: "issued-unit",
+          productId: "retired-product",
+          batchId: "retired-batch",
+          serial: "SERIAL-1",
+          status: "Activated" as const,
+          createdAt: "2026-11-14T00:00:00Z",
+        },
+      ],
+      identities: [
+        {
+          id: "issued-identity",
+          unitId: "issued-unit",
+          gtin: demoProduct.gtin,
+          serial: "SERIAL-1",
+          canonicalPath: `/01/${demoProduct.gtin}/21/SERIAL-1`,
+          issuedAt: "2026-11-14T00:00:00Z",
+        },
+      ],
+    };
+    expect(previewProductImport(identityOnly, table, options()).rows[0]).toMatchObject({
+      action: "conflict",
+      issues: [{ code: "GTIN_CONFLICT" }],
     });
   });
 
@@ -293,6 +410,39 @@ describe("product import preview and apply", () => {
       new ProductImportError("CONFIRMATION_REQUIRED", "Explicit confirmation is required."),
     );
     const changed = saveDraft(state, { ...state.products[0]!.draft, name: "Concurrent change" });
+    expect(() => applyProductImport(changed, plan, { confirmed: true })).toThrow(
+      "run dry-run again",
+    );
+  });
+
+  it("expires a create preview when a concurrent product claims its GTIN", () => {
+    const table = parseProductCsv(
+      [
+        header,
+        csvRow({
+          external: "EXT-NEW",
+          sku: "SKU-NEW",
+          brand: "Brand B",
+          gtin: "09506000134352",
+        }),
+      ].join("\n"),
+    );
+    const empty = emptyCatalogState();
+    const plan = previewProductImport(empty, table, options());
+    expect(plan.rows[0]?.action).toBe("create");
+    const changed = {
+      ...empty,
+      products: [
+        {
+          draft: {
+            ...structuredClone(demoProduct),
+            id: "concurrent",
+            sku: "OTHER",
+            gtin: "09506000134352",
+          },
+        },
+      ],
+    };
     expect(() => applyProductImport(changed, plan, { confirmed: true })).toThrow(
       "run dry-run again",
     );
