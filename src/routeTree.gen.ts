@@ -19,7 +19,9 @@ import { Route as AdminMarketingRouteImport } from './routes/admin.marketing'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminTransparencyRouteImport } from './routes/admin.transparency'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
+import { Route as BrandSlug01GtinRouteImport } from './routes/$brandSlug.01.$gtin'
 import { Route as R01Gtin21SerialRouteImport } from './routes/01.$gtin.21.$serial'
+import { Route as BrandSlug01Gtin21SerialRouteImport } from './routes/$brandSlug.01.$gtin.21.$serial'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -71,10 +73,20 @@ const PSlugRoute = PSlugRouteImport.update({
   path: '/p/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BrandSlug01GtinRoute = BrandSlug01GtinRouteImport.update({
+  id: '/$brandSlug/01/$gtin',
+  path: '/$brandSlug/01/$gtin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const R01Gtin21SerialRoute = R01Gtin21SerialRouteImport.update({
   id: '/01/$gtin/21/$serial',
   path: '/01/$gtin/21/$serial',
   getParentRoute: () => rootRouteImport,
+} as any)
+const BrandSlug01Gtin21SerialRoute = BrandSlug01Gtin21SerialRouteImport.update({
+  id: '/21/$serial',
+  path: '/21/$serial',
+  getParentRoute: () => BrandSlug01GtinRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -88,7 +100,9 @@ export interface FileRoutesByFullPath {
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/$brandSlug/01/$gtin': typeof BrandSlug01GtinRouteWithChildren
   '/01/$gtin/21/$serial': typeof R01Gtin21SerialRoute
+  '/$brandSlug/01/$gtin/21/$serial': typeof BrandSlug01Gtin21SerialRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -100,7 +114,9 @@ export interface FileRoutesByTo {
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
   '/admin': typeof AdminIndexRoute
+  '/$brandSlug/01/$gtin': typeof BrandSlug01GtinRouteWithChildren
   '/01/$gtin/21/$serial': typeof R01Gtin21SerialRoute
+  '/$brandSlug/01/$gtin/21/$serial': typeof BrandSlug01Gtin21SerialRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -114,7 +130,9 @@ export interface FileRoutesById {
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
   '/admin/': typeof AdminIndexRoute
+  '/$brandSlug/01/$gtin': typeof BrandSlug01GtinRouteWithChildren
   '/01/$gtin/21/$serial': typeof R01Gtin21SerialRoute
+  '/$brandSlug/01/$gtin/21/$serial': typeof BrandSlug01Gtin21SerialRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -129,7 +147,9 @@ export interface FileRouteTypes {
     | '/admin/transparency'
     | '/p/$slug'
     | '/admin/'
+    | '/$brandSlug/01/$gtin'
     | '/01/$gtin/21/$serial'
+    | '/$brandSlug/01/$gtin/21/$serial'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -141,7 +161,9 @@ export interface FileRouteTypes {
     | '/admin/transparency'
     | '/p/$slug'
     | '/admin'
+    | '/$brandSlug/01/$gtin'
     | '/01/$gtin/21/$serial'
+    | '/$brandSlug/01/$gtin/21/$serial'
   id:
     | '__root__'
     | '/'
@@ -154,13 +176,16 @@ export interface FileRouteTypes {
     | '/admin/transparency'
     | '/p/$slug'
     | '/admin/'
+    | '/$brandSlug/01/$gtin'
     | '/01/$gtin/21/$serial'
+    | '/$brandSlug/01/$gtin/21/$serial'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AdminRoute: typeof AdminRouteWithChildren
   PSlugRoute: typeof PSlugRoute
+  BrandSlug01GtinRoute: typeof BrandSlug01GtinRouteWithChildren
   R01Gtin21SerialRoute: typeof R01Gtin21SerialRoute
 }
 
@@ -236,12 +261,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$brandSlug/01/$gtin': {
+      id: '/$brandSlug/01/$gtin'
+      path: '/$brandSlug/01/$gtin'
+      fullPath: '/$brandSlug/01/$gtin'
+      preLoaderRoute: typeof BrandSlug01GtinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/01/$gtin/21/$serial': {
       id: '/01/$gtin/21/$serial'
       path: '/01/$gtin/21/$serial'
       fullPath: '/01/$gtin/21/$serial'
       preLoaderRoute: typeof R01Gtin21SerialRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/$brandSlug/01/$gtin/21/$serial': {
+      id: '/$brandSlug/01/$gtin/21/$serial'
+      path: '/21/$serial'
+      fullPath: '/$brandSlug/01/$gtin/21/$serial'
+      preLoaderRoute: typeof BrandSlug01Gtin21SerialRouteImport
+      parentRoute: typeof BrandSlug01GtinRoute
     }
   }
 }
@@ -268,10 +307,23 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface BrandSlug01GtinRouteChildren {
+  BrandSlug01Gtin21SerialRoute: typeof BrandSlug01Gtin21SerialRoute
+}
+
+const BrandSlug01GtinRouteChildren: BrandSlug01GtinRouteChildren = {
+  BrandSlug01Gtin21SerialRoute: BrandSlug01Gtin21SerialRoute,
+}
+
+const BrandSlug01GtinRouteWithChildren = BrandSlug01GtinRoute._addFileChildren(
+  BrandSlug01GtinRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AdminRoute: AdminRouteWithChildren,
   PSlugRoute: PSlugRoute,
+  BrandSlug01GtinRoute: BrandSlug01GtinRouteWithChildren,
   R01Gtin21SerialRoute: R01Gtin21SerialRoute,
 }
 export const routeTree = rootRouteImport

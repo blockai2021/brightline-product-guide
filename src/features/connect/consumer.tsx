@@ -37,6 +37,7 @@ import {
 import { copy } from "./translations";
 import { useLanguage } from "./language";
 import { cn } from "@/lib/utils";
+import { resolvePublishedProduct } from "./digital-link-qr";
 function safeUrl(value: string) {
   try {
     const url = new URL(value);
@@ -49,10 +50,12 @@ export function Consumer({
   slug,
   gtin,
   identitySerial,
+  brandSlug,
 }: {
   slug?: string;
   gtin?: string;
   identitySerial?: string;
+  brandSlug?: string;
 }) {
   const { state, update, ready } = useDemo();
   const [lang, setLang] = useLanguage("consumer");
@@ -69,16 +72,14 @@ export function Consumer({
   const t = (key: string) => copy[lang]?.[key] || key;
   const identityUnit =
     gtin && identitySerial ? findUnitByIdentity(state, gtin, identitySerial) : undefined;
-  const product = identityUnit
-    ? state.products.find((p) => p.published?.id === identityUnit.productId)?.published
-    : state.products.find((p) => p.published?.slug === slug)?.published;
+  const product = resolvePublishedProduct(state, { slug, gtin, serial: identitySerial, brandSlug });
   const identity = identityUnit
     ? state.identities.find((item) => item.unitId === identityUnit.id)
     : undefined;
   const consent = state.consents.find((c) => c.email === consentEmail);
   useEffect(() => {
     if (ready && product) update((s) => ({ ...s, visits: s.visits + 1 }));
-  }, [ready, slug, gtin, identitySerial]);
+  }, [ready, slug, gtin, identitySerial, brandSlug]);
   function switchTab(value: string) {
     setTab(value);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -176,9 +177,13 @@ export function Consumer({
   return (
     <div className="consumer-shell">
       <header className="consumer-header">
-        <Link to="/p/$slug" params={{ slug: product?.slug || slug || "" }} className="nova-logo">
-          NOVA<span>HOME</span>
-        </Link>
+        {product ? (
+          <Link to="/p/$slug" params={{ slug: product.slug }} className="nova-logo">
+            {product.brand}
+          </Link>
+        ) : (
+          <span className="nova-logo">iCode Connect</span>
+        )}
         <div className="consumer-desktop-nav">
           {nav.map((n) => (
             <Button

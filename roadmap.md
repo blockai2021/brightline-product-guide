@@ -17,3 +17,10 @@
 - [x] Remove duplicate navigation and split the shared editor into three localized tabs
 - [x] Redirect the legacy content URL to the content tab without changing product data
 - [x] Verify navigation, draft isolation, publishing, consumer updates and mobile layouts
+
+# Issue #5 / L-006
+
+- [x] Extend the shared editor to five areas and product-specific published previews
+- [x] Batch generation, serial CSV import, scoped CSV export and persistent-unit QR downloads
+- [x] Brand-aware consumer routes with legacy compatibility
+- [x] Verify QR decoding, brand isolation, existing-unit downloads and multilingual mobile flows

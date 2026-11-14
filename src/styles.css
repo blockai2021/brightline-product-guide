@@ -2112,7 +2112,7 @@ td small {
 /* Localized admin text must wrap without changing the control's domain values. */
 .product-tabs {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   width: 100%;
   height: auto;
   margin-block: 20px;
@@ -2123,6 +2123,18 @@ td small {
   min-width: 0;
   height: 100%;
   padding: 10px 6px;
+}
+.unit-table table {
+  min-width: 680px;
+}
+.unit-table button {
+  min-width: 110px;
+  white-space: nowrap;
+}
+@media (max-width: 650px) {
+  .product-tabs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 .product-tabs svg {
   flex-shrink: 0;

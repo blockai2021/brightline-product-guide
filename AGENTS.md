@@ -37,4 +37,6 @@ use the editor.
 - Keep editable product drafts separate from immutable published snapshots; consumer pages read only published snapshots to prevent leaking unpublished edits.
 - Use TanStack file routes for admin sections and a mobile-first consumer entry; both share the same repository and localized product types.
 - Keep admin UI copy namespaced in the shared locale dictionaries and persist each audience's language independently after hydration; language changes must not alter domain values or editable content languages.
-- Use one product editor with URL-addressable basic, content and publishing tabs; redirect the legacy content route to its content tab to preserve links and a single shared draft form.
+- Use one product editor with URL-addressable basic, content, units, links and publishing tabs; redirect the legacy content route to its content tab to preserve links and a single shared draft form.
+- Keep QR artifacts and CSV parsing in a frontend helper; the unit panel reads persisted unit/identity associations and delegates serial generation, creation, URI construction and CSV escaping to the existing domain functions to avoid duplicate rules.
+- Derive brand path slugs consistently from the published brand (draft only before first publication); resolve branded routes against that published brand and issued identities to prevent cross-brand or draft content exposure.

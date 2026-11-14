@@ -48,6 +48,7 @@ import {
 import { cn } from "@/lib/utils";
 import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
 import { translateAdmin } from "./translations";
+import { ProductUnits } from "./product-units";
 const nav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Products", path: "/admin/products", icon: Box },
@@ -124,7 +125,7 @@ export function AdminLayout() {
               <p>{t("Explore a connected product journey.")}</p>
               <Button variant="outline" size="sm" asChild className="w-full">
                 <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
-                  {t("Open consumer experience")}
+                  {t("View AirPure Mini demo")}
                   <ArrowUpRight />
                 </Link>
               </Button>
@@ -186,12 +187,6 @@ export function AdminLayout() {
                 <span />
                 {t("Demo environment")}
               </span>
-              <Button variant="outline" size="sm" asChild className="consumer-link">
-                <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
-                  <ExternalLink />
-                  {t("Consumer view")}
-                </Link>
-              </Button>
               <Button
                 size="icon"
                 variant="ghost"
@@ -533,7 +528,7 @@ export function Dashboard() {
           </div>
           <Button variant="outline" asChild className="w-full mt-5">
             <Link to="/p/$slug" params={{ slug: "airpure-mini" }}>
-              {t("Explore consumer experience")}
+              {t("View AirPure Mini demo")}
               <ArrowUpRight />
             </Link>
           </Button>
@@ -708,8 +703,8 @@ export function Products({
   tab,
   onTabChange,
 }: {
-  tab: "basic" | "content" | "publishing";
-  onTabChange: (tab: "basic" | "content" | "publishing") => void;
+  tab: "basic" | "content" | "units" | "links" | "publishing";
+  onTabChange: (tab: "basic" | "content" | "units" | "links" | "publishing") => void;
 }) {
   const { t, language } = useAdminTranslation();
   const { state, update, ready } = useDemo();
@@ -845,29 +840,74 @@ export function Products({
                 {form.id} · {dirty ? t("Unsaved changes") : t("Saved draft")}
               </p>
             </div>
-            <Status value={entry?.published ? "Published" : "Draft"} />
+            <div className="flex flex-wrap items-center gap-2">
+              <Status value={entry?.published ? "Published" : "Draft"} />
+              {entry?.published ? (
+                <Button variant="outline" size="sm" asChild>
+                  <Link
+                    to="/p/$slug"
+                    params={{ slug: entry.published.slug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <ExternalLink />
+                    {t("Preview consumer page")}
+                  </Link>
+                </Button>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled
+                  title={t("Publish this product first.")}
+                >
+                  <ExternalLink />
+                  {t("Publish this product first.")}
+                </Button>
+              )}
+            </div>
           </div>
           <Tabs
             value={tab}
             onValueChange={(value) => {
-              if (value === "basic" || value === "content" || value === "publishing")
+              if (
+                value === "basic" ||
+                value === "content" ||
+                value === "units" ||
+                value === "links" ||
+                value === "publishing"
+              )
                 onTabChange(value);
             }}
           >
             <TabsList className="product-tabs" aria-label={t("Products")}>
               <TabsTrigger value="basic">
                 <Box size={16} />
-                {t("Basic Information")}
+                {t("Model information")}
               </TabsTrigger>
               <TabsTrigger value="content">
                 <BookOpen size={16} />
                 {t("Digital Content")}
+              </TabsTrigger>
+              <TabsTrigger value="units">
+                <ClipboardList size={16} />
+                {t("Batches & units")}
+              </TabsTrigger>
+              <TabsTrigger value="links">
+                <QrCode size={16} />
+                {t("Digital Links & QR")}
               </TabsTrigger>
               <TabsTrigger value="publishing">
                 <Check size={16} />
                 {t("Publishing")}
               </TabsTrigger>
             </TabsList>
+            <TabsContent value="units">
+              <ProductUnits key={form.id} productId={form.id} mode="units" />
+            </TabsContent>
+            <TabsContent value="links">
+              <ProductUnits key={form.id} productId={form.id} mode="links" />
+            </TabsContent>
             <TabsContent value="basic" className="form-grid">
               <div className="product-image-editor">
                 <img src={form.image} alt={form.name} width={220} height={220} />
@@ -1007,7 +1047,12 @@ export function Products({
               </dl>
               <Button variant="outline" asChild disabled={!entry?.published}>
                 {entry?.published ? (
-                  <Link to="/p/$slug" params={{ slug: entry.published.slug }}>
+                  <Link
+                    to="/p/$slug"
+                    params={{ slug: entry.published.slug }}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
                     <ExternalLink />
                     {t("Preview consumer page")}
                   </Link>
@@ -1669,4 +1714,3 @@ export function Dpp() {
     </>
   );
 }
-
