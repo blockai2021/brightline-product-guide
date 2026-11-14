@@ -99,6 +99,28 @@ export type DemoState = {
   consents: Consent[];
   visits: number;
 };
+export type UnitInputRejection = {
+  index: number;
+  serial: string;
+  reason: "Invalid AI (21) serial" | "Duplicate in input" | "Duplicate GTIN + serial";
+};
+export type CreateProductUnitsResult = {
+  state: DemoState;
+  created: ProductUnit[];
+  rejected: UnitInputRejection[];
+};
+export class UnitIdentityError extends Error {
+  constructor(
+    readonly code:
+      | "PRODUCT_NOT_FOUND"
+      | "BATCH_NOT_FOUND"
+      | "BATCH_PRODUCT_MISMATCH"
+      | "INVALID_GTIN"
+      | "ISSUED_GTIN_IMMUTABLE",
+  ) {
+    super(code);
+  }
+}
 const AI21_PATTERN = /^[0-9A-Za-z!%&+,./_*'();:<=>?"-]{1,20}$/;
 export function normalizeGtin14(value: string): string | null {
   if (!/^\d{8}$|^\d{12,14}$/.test(value)) return null;
@@ -131,7 +153,86 @@ export function findUnitByIdentity(state: DemoState, gtin: string, serial: strin
   );
   return identity ? state.units.find((unit) => unit.id === identity.unitId) : undefined;
 }
+export function createProductUnits(
+  state: DemoState,
+  input: { productId: string; batchId: string; serials: string[] },
+  dependencies: { createId?: () => string; now?: () => string } = {},
+): CreateProductUnitsResult {
+  const product = state.products.find((entry) => entry.draft.id === input.productId)?.draft;
+  if (!product) throw new UnitIdentityError("PRODUCT_NOT_FOUND");
+  const batch = state.batches.find((entry) => entry.id === input.batchId);
+  if (!batch) throw new UnitIdentityError("BATCH_NOT_FOUND");
+  if (batch.productId !== product.id) throw new UnitIdentityError("BATCH_PRODUCT_MISMATCH");
+  const gtin = normalizeGtin14(product.gtin);
+  if (!gtin) throw new UnitIdentityError("INVALID_GTIN");
+  const createId = dependencies.createId || (() => crypto.randomUUID());
+  const now = (dependencies.now || (() => new Date().toISOString()))();
+  const seen = new Set<string>();
+  const accepted: Array<{ index: number; serial: string }> = [];
+  const rejected: UnitInputRejection[] = [];
+  input.serials.forEach((serial, index) => {
+    if (!isValidAi21Serial(serial)) {
+      rejected.push({ index, serial, reason: "Invalid AI (21) serial" });
+      return;
+    }
+    if (seen.has(serial)) {
+      rejected.push({ index, serial, reason: "Duplicate in input" });
+      return;
+    }
+    seen.add(serial);
+    if (state.identities.some((identity) => identity.gtin === gtin && identity.serial === serial)) {
+      rejected.push({ index, serial, reason: "Duplicate GTIN + serial" });
+      return;
+    }
+    accepted.push({ index, serial });
+  });
+  const created = accepted.map(({ serial }) => ({
+    id: `unit-${createId()}`,
+    productId: product.id,
+    batchId: batch.id,
+    serial,
+    status: "Created" as const,
+    createdAt: now,
+  }));
+  const identities = created.map((unit) => ({
+    id: `identity-${createId()}`,
+    unitId: unit.id,
+    gtin,
+    serial: unit.serial,
+    canonicalPath: buildDigitalLinkPath(gtin, unit.serial),
+    issuedAt: now,
+  }));
+  const transparency = created.map((unit) => ({
+    id: `transparency-${createId()}`,
+    unitId: unit.id,
+    state: "Not enrolled" as const,
+    evidence: "Simulated" as const,
+  }));
+  return {
+    state: {
+      ...state,
+      units: [...created, ...state.units],
+      identities: [...identities, ...state.identities],
+      transparency: [...transparency, ...state.transparency],
+    },
+    created,
+    rejected,
+  };
+}
+export function assertIssuedGtinUnchanged(state: DemoState, product: Product) {
+  const issuedGtins = new Set(
+    state.units
+      .filter((unit) => unit.productId === product.id)
+      .flatMap((unit) => state.identities.filter((identity) => identity.unitId === unit.id))
+      .map((identity) => identity.gtin),
+  );
+  if (!issuedGtins.size) return;
+  const nextGtin = normalizeGtin14(product.gtin);
+  if (!nextGtin || issuedGtins.size !== 1 || !issuedGtins.has(nextGtin))
+    throw new UnitIdentityError("ISSUED_GTIN_IMMUTABLE");
+}
 export function publishProduct(state: DemoState, product: Product): DemoState {
+  assertIssuedGtinUnchanged(state, product);
   const publishedAt = new Date().toISOString();
   const snapshot = {
     ...product,
@@ -170,6 +271,7 @@ export function publishProduct(state: DemoState, product: Product): DemoState {
   };
 }
 export function saveDraft(state: DemoState, product: Product): DemoState {
+  assertIssuedGtinUnchanged(state, product);
   const exists = state.products.some((p) => p.draft.id === product.id);
   return {
     ...state,
