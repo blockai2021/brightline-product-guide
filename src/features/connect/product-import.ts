@@ -245,7 +245,6 @@ function mapRows(table: ProductImportTable, options: ProductImportOptions): Mapp
 function validateMappedRows(rows: MappedRow[]) {
   const externalCounts = new Map<string, number>();
   const skuCounts = new Map<string, number>();
-  const skuBrands = new Map<string, Set<string>>();
   const gtinCounts = new Map<string, number>();
   for (const row of rows) {
     const external = key(row.values.externalProductId);
@@ -255,11 +254,6 @@ function validateMappedRows(rows: MappedRow[]) {
     if (external) externalCounts.set(external, (externalCounts.get(external) ?? 0) + 1);
     if (sku && brand)
       skuCounts.set(`${brand}\u001f${sku}`, (skuCounts.get(`${brand}\u001f${sku}`) ?? 0) + 1);
-    if (sku) {
-      const brands = skuBrands.get(sku) ?? new Set<string>();
-      if (brand) brands.add(brand);
-      skuBrands.set(sku, brands);
-    }
     if (gtin) gtinCounts.set(gtin, (gtinCounts.get(gtin) ?? 0) + 1);
   }
   for (const row of rows) {
@@ -280,10 +274,6 @@ function validateMappedRows(rows: MappedRow[]) {
       );
     if (sku && brand && (skuCounts.get(`${brand}\u001f${sku}`) ?? 0) > 1)
       row.issues.push(issue("DUPLICATE_SKU", "Brand and SKU are duplicated in the file."));
-    if (sku && (skuBrands.get(sku)?.size ?? 0) > 1)
-      row.issues.push(
-        issue("CROSS_BRAND_SKU_CONFLICT", "The same SKU appears under multiple brands."),
-      );
     if (gtin && (gtinCounts.get(gtin) ?? 0) > 1)
       row.issues.push(issue("DUPLICATE_GTIN", "GTIN is duplicated in the file."));
   }
@@ -369,6 +359,23 @@ function rowActionForIssues(issues: ProductImportIssue[]) {
   return issues.some((entry) => validation.has(entry.code)) ? "error" : "conflict";
 }
 
+function hasGtinConflict(state: DemoState, gtin: string, exceptProductId?: string) {
+  if (
+    state.products.some(
+      (entry) =>
+        entry.draft.id !== exceptProductId &&
+        (normalizeGtin14(entry.draft.gtin) === gtin ||
+          normalizeGtin14(entry.published?.gtin ?? "") === gtin),
+    )
+  )
+    return true;
+  return state.identities.some((identity) => {
+    if (identity.gtin !== gtin) return false;
+    const unit = state.units.find((entry) => entry.id === identity.unitId);
+    return unit?.productId !== exceptProductId;
+  });
+}
+
 function planRows(
   state: DemoState,
   table: ProductImportTable,
@@ -418,15 +425,6 @@ function planRows(
         action: "conflict",
         issues: [issue("EXTERNAL_ID_CONFLICT", "External product ID belongs to another brand.")],
       };
-    const otherBrandSku = state.products.some(
-      (entry) => key(entry.draft.sku) === sku && key(entry.draft.brand) !== brand,
-    );
-    if (!existing && otherBrandSku)
-      return {
-        ...base,
-        action: "conflict",
-        issues: [issue("CROSS_BRAND_SKU_CONFLICT", "SKU already exists under another brand.")],
-      };
     if (options.mode === "create-only" && existing)
       return {
         ...base,
@@ -448,9 +446,7 @@ function planRows(
           issues: [issue("MISSING_NAME", "Product name is required for creation.")],
         };
       const draft = blankProduct(row.values);
-      const gtinConflict =
-        draft.gtin &&
-        state.products.some((entry) => normalizeGtin14(entry.draft.gtin) === draft.gtin);
+      const gtinConflict = draft.gtin && hasGtinConflict(state, draft.gtin);
       if (gtinConflict)
         return {
           ...base,
@@ -471,12 +467,7 @@ function planRows(
     }
     const nextDraft = applyValues(existing.draft, row.values);
     const gtinConflict =
-      nextDraft.gtin &&
-      state.products.some(
-        (entry) =>
-          entry.draft.id !== existing.draft.id &&
-          normalizeGtin14(entry.draft.gtin) === nextDraft.gtin,
-      );
+      nextDraft.gtin && hasGtinConflict(state, nextDraft.gtin, existing.draft.id);
     if (gtinConflict)
       return {
         ...base,
