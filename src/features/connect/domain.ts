@@ -113,15 +113,10 @@ export type GenerateSerialCandidatesResult =
   | { ok: true; serials: string[] }
   | {
       ok: false;
-      code:
-        | "INVALID_PREFIX"
-        | "INVALID_START"
-        | "INVALID_COUNT"
-        | "SERIAL_OVERFLOW"
-        | "DUPLICATE_SERIAL";
+      code: "INVALID_PREFIX" | "INVALID_START" | "INVALID_COUNT" | "SERIAL_OVERFLOW";
       message: string;
     };
-export const DEMO_DIGITAL_LINK_BASE_URL = "https://demo.icodeconnect.example";
+export const DEMO_DIGITAL_LINK_BASE_URL = "https://id.product-icode.example";
 export class UnitIdentityError extends Error {
   constructor(
     readonly code:
@@ -158,35 +153,12 @@ export function buildDigitalLinkPath(gtin: string, serial: string) {
   if (!normalized) throw new Error("Invalid GTIN");
   return `/01/${normalized}/21/${encodeGs1PathSegment(serial)}`;
 }
-export function buildDigitalLinkUri(
-  baseUrl: string,
-  gtin: string,
-  serial: string,
-  trustedHosts: readonly string[] = [new URL(DEMO_DIGITAL_LINK_BASE_URL).hostname],
-) {
-  const base = new URL(baseUrl);
-  if (
-    base.protocol !== "https:" ||
-    base.username ||
-    base.password ||
-    base.pathname !== "/" ||
-    base.search ||
-    base.hash ||
-    !trustedHosts.includes(base.hostname)
-  ) {
-    throw new Error("Untrusted Digital Link base URL");
-  }
-  return new URL(buildDigitalLinkPath(gtin, serial), base.origin).toString();
-}
 export function generateSerialCandidates(input: {
   prefix: string;
   start: number;
   count: number;
-  existing?: Iterable<string>;
-  width?: number;
   maxCount?: number;
 }): GenerateSerialCandidatesResult {
-  const width = input.width ?? 6;
   const maxCount = input.maxCount ?? 1000;
   if (input.prefix && !isValidAi21Serial(input.prefix))
     return {
@@ -202,34 +174,54 @@ export function generateSerialCandidates(input: {
       code: "INVALID_COUNT",
       message: `Count must be between 1 and ${maxCount}.`,
     };
-  if (!Number.isSafeInteger(width) || width < 1 || width > 20)
-    return { ok: false, code: "SERIAL_OVERFLOW", message: "Serial width is invalid." };
-  const last = input.start + input.count - 1;
-  if (
-    !Number.isSafeInteger(last) ||
-    String(last).length > width ||
-    input.prefix.length + width > 20
-  )
+  if (input.start > Number.MAX_SAFE_INTEGER - (input.count - 1))
     return {
       ok: false,
       code: "SERIAL_OVERFLOW",
-      message: "Generated serials exceed the configured width or AI (21) limit.",
+      message: "Generated serial number exceeds the safe integer limit.",
     };
   const serials = Array.from(
     { length: input.count },
-    (_, index) => `${input.prefix}${String(input.start + index).padStart(width, "0")}`,
+    (_, index) => `${input.prefix}${String(input.start + index).padStart(6, "0")}`,
   );
   if (serials.some((serial) => !isValidAi21Serial(serial)))
     return {
       ok: false,
       code: "SERIAL_OVERFLOW",
-      message: "Generated serials are not valid AI (21) values.",
+      message: "Generated serials exceed the GS1 AI (21) limit.",
     };
-  const existing = new Set(input.existing || []);
-  const duplicate = serials.find((serial) => existing.has(serial));
-  if (duplicate)
-    return { ok: false, code: "DUPLICATE_SERIAL", message: `Serial already exists: ${duplicate}` };
   return { ok: true, serials };
+}
+function validateBrandSlug(value: string) {
+  if (!/^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(value) || /^\d{2,4}$/.test(value))
+    throw new Error("Invalid brand slug");
+  return value;
+}
+export function buildBrandedDigitalLinkUri(input: {
+  baseUrl: string;
+  brandSlug: string;
+  gtin: string;
+  serial?: string;
+  trustedHosts?: readonly string[];
+}) {
+  const base = new URL(input.baseUrl);
+  const trustedHosts = input.trustedHosts ?? [new URL(DEMO_DIGITAL_LINK_BASE_URL).hostname];
+  if (
+    base.protocol !== "https:" ||
+    base.username ||
+    base.password ||
+    base.port ||
+    base.pathname !== "/" ||
+    base.search ||
+    base.hash ||
+    !trustedHosts.includes(base.hostname)
+  )
+    throw new Error("Untrusted Digital Link base URL");
+  const brandSlug = validateBrandSlug(input.brandSlug);
+  const gtin = normalizeGtin14(input.gtin);
+  if (!gtin) throw new Error("Invalid GTIN");
+  const identityPath = input.serial ? buildDigitalLinkPath(gtin, input.serial) : `/01/${gtin}`;
+  return `${base.origin}/${brandSlug}${identityPath}`;
 }
 function csvCell(value: string) {
   const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
@@ -241,6 +233,7 @@ export function buildUnitExportCsv(
     productId: string;
     batchId: string;
     baseUrl: string;
+    brandSlug: string;
     trustedHosts?: readonly string[];
   },
 ) {
@@ -261,7 +254,13 @@ export function buildUnitExportCsv(
         batch.batchNumber,
         identity.gtin,
         identity.serial,
-        buildDigitalLinkUri(input.baseUrl, identity.gtin, identity.serial, input.trustedHosts),
+        buildBrandedDigitalLinkUri({
+          baseUrl: input.baseUrl,
+          brandSlug: input.brandSlug,
+          gtin: identity.gtin,
+          serial: identity.serial,
+          ...(input.trustedHosts ? { trustedHosts: input.trustedHosts } : {}),
+        }),
       ]
         .map(csvCell)
         .join(",");
