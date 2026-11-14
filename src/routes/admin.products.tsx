@@ -4,25 +4,28 @@ import { pageMeta } from "@/features/connect/meta";
 export const Route = createFileRoute("/admin/products")({
   validateSearch: (
     search: Record<string, unknown>,
-  ): { tab?: "basic" | "content" | "units" | "links" | "publishing" } => ({
+  ): { tab?: "basic" | "content" | "units" | "links" | "publishing" | undefined } => ({
     tab:
       search["tab"] === "content" ||
       search["tab"] === "units" ||
       search["tab"] === "links" ||
       search["tab"] === "publishing"
         ? search["tab"]
-        : "basic",
+        : search["tab"] === "basic"
+          ? "basic"
+          : undefined,
   }),
   component: ProductsPage,
   head: () =>
     pageMeta("Product management", "Create drafts and publish connected product information."),
 });
 function ProductsPage() {
-  const { tab = "basic" } = Route.useSearch();
+  const { tab } = Route.useSearch();
   const navigate = Route.useNavigate();
   return (
     <Products
-      tab={tab}
+      tab={tab ?? "basic"}
+      catalogInitially={!tab}
       onTabChange={(tab) => navigate({ to: "/admin/products", search: { tab }, replace: true })}
     />
   );

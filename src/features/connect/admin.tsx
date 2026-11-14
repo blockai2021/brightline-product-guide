@@ -50,6 +50,7 @@ import { cn } from "@/lib/utils";
 import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
 import { translateAdmin } from "./translations";
 import { ProductUnits } from "./product-units";
+import { ProductCatalog } from "./product-catalog";
 import { downloadFile } from "./digital-link-qr";
 import {
   buildMappingExportCsv,
@@ -713,9 +714,11 @@ export function Dashboard() {
 export function Products({
   tab,
   onTabChange,
+  catalogInitially = false,
 }: {
   tab: "basic" | "content" | "units" | "links" | "publishing";
   onTabChange: (tab: "basic" | "content" | "units" | "links" | "publishing") => void;
+  catalogInitially?: boolean;
 }) {
   const { t, language } = useAdminTranslation();
   const { state, update, ready } = useDemo();
@@ -725,6 +728,7 @@ export function Products({
   const [locale, setLocale] = useState<Locale>("en");
   const [query, setQuery] = useState("");
   const [dirty, setDirty] = useState(false);
+  const [catalog, setCatalog] = useState(catalogInitially);
   useEffect(() => {
     const p = state.products.find((p) => p.draft.id === selected);
     if (p) {
@@ -784,6 +788,7 @@ export function Products({
     setSelected(id);
     setForm(p);
     setDirty(false);
+    setCatalog(false);
   }
   async function imageFile(file?: File) {
     if (!file) return;
@@ -803,13 +808,37 @@ export function Products({
         title={t("Products")}
         subtitle={t("One product identity. Every customer touchpoint.")}
       >
+        {!catalog && (
+          <Button
+            variant="outline"
+            onClick={() => {
+              if (dirty && !window.confirm(t("Catalog.discard"))) return;
+              setCatalog(true);
+            }}
+          >
+            <ChevronLeft />
+            {t("Catalog.title")}
+          </Button>
+        )}
         <Button onClick={create}>
           <Plus />
           {t("Create product")}
         </Button>
       </PageHeading>
       <DemoNotice />
-      <div className="editor-layout">
+      {catalog && (
+        <ProductCatalog
+          onOpen={(id) => {
+            const product = state.products.find((entry) => entry.draft.id === id);
+            if (!product) return;
+            setSelected(id);
+            setForm(product.draft);
+            setDirty(false);
+            setCatalog(false);
+          }}
+        />
+      )}
+      <div className={cn("editor-layout", catalog && "editor-layout-catalog")}>
         <aside className="product-picker">
           <div className="search-box">
             <Search size={16} />

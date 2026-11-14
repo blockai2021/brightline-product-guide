@@ -30,3 +30,9 @@
 - [x] Replace duplicate Transparency creation tools with mapping filters, selection and pagination
 - [x] Export selected or all filtered mappings through existing CSV helpers
 - [x] Verify multilingual mobile layouts, retained links and unchanged identity rules
+
+# Issue #16 / L-010
+
+- [x] Add searchable, filtered, paginated product catalog and safe CSV export
+- [x] Add three-language CSV/XLSX import wizard using C-007 parse/preview/apply
+- [x] Verify import persistence, conflict protection, existing QR and consumer flows on desktop/mobile
