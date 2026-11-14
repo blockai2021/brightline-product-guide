@@ -3,6 +3,7 @@ export type Localized = Record<Locale, string>;
 export type IdentifierClaimStatus = "Demo" | "Format valid · unverified" | "Verified by GS1";
 export type Product = {
   id: string;
+  externalProductId?: string;
   slug: string;
   name: string;
   brand: string;
