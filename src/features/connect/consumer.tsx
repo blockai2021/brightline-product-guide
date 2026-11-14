@@ -26,7 +26,14 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import { toast } from "sonner";
 import { useDemo } from "./store";
 import { Field, TextField } from "./ui";
-import { registerEvent, setConsent, type Campaign, type Locale, type RecordEntry } from "./domain";
+import {
+  findUnitByIdentity,
+  registerEvent,
+  setConsent,
+  type Campaign,
+  type Locale,
+  type RecordEntry,
+} from "./domain";
 import { copy } from "./translations";
 import { useLanguage } from "./language";
 import { cn } from "@/lib/utils";
@@ -38,7 +45,15 @@ function safeUrl(value: string) {
     return undefined;
   }
 }
-export function Consumer({ slug }: { slug: string }) {
+export function Consumer({
+  slug,
+  gtin,
+  identitySerial,
+}: {
+  slug?: string;
+  gtin?: string;
+  identitySerial?: string;
+}) {
   const { state, update, ready } = useDemo();
   const [lang, setLang] = useLanguage("consumer");
   const [tab, setTab] = useState("product");
@@ -52,11 +67,18 @@ export function Consumer({ slug }: { slug: string }) {
   const [consentEmail, setConsentEmail] = useState("");
   const [error, setError] = useState("");
   const t = (key: string) => copy[lang]?.[key] || key;
-  const product = state.products.find((p) => p.published?.slug === slug)?.published;
+  const identityUnit =
+    gtin && identitySerial ? findUnitByIdentity(state, gtin, identitySerial) : undefined;
+  const product = identityUnit
+    ? state.products.find((p) => p.published?.id === identityUnit.productId)?.published
+    : state.products.find((p) => p.published?.slug === slug)?.published;
+  const identity = identityUnit
+    ? state.identities.find((item) => item.unitId === identityUnit.id)
+    : undefined;
   const consent = state.consents.find((c) => c.email === consentEmail);
   useEffect(() => {
     if (ready && product) update((s) => ({ ...s, visits: s.visits + 1 }));
-  }, [ready, slug]);
+  }, [ready, slug, gtin, identitySerial]);
   function switchTab(value: string) {
     setTab(value);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -65,7 +87,7 @@ export function Consumer({ slug }: { slug: string }) {
     setError("");
     setModal(kind);
     setEvent(campaign || null);
-    setSerial(product?.serial || "");
+    setSerial(identityUnit?.serial || "");
     setDetails("");
   }
   function validateEmail(value: string) {
@@ -78,9 +100,19 @@ export function Consumer({ slug }: { slug: string }) {
       setError(t("invalidEmail"));
       return;
     }
+    const selectedUnit =
+      modal === "Event"
+        ? undefined
+        : identityUnit ||
+          state.units.find((unit) => unit.productId === product.id && unit.serial === serial);
+    if (modal !== "Event" && !selectedUnit) {
+      setError(t("This serial number is not registered to this product."));
+      return;
+    }
     const record: RecordEntry = {
       id: `DEMO-${crypto.randomUUID().slice(0, 8)}`,
       productId: product.id,
+      ...(selectedUnit ? { unitId: selectedUnit.id } : {}),
       name: `Demo · ${name}`,
       email,
       serial,
@@ -144,7 +176,7 @@ export function Consumer({ slug }: { slug: string }) {
   return (
     <div className="consumer-shell">
       <header className="consumer-header">
-        <Link to="/p/$slug" params={{ slug }} className="nova-logo">
+        <Link to="/p/$slug" params={{ slug: product?.slug || slug || "" }} className="nova-logo">
           NOVA<span>HOME</span>
         </Link>
         <div className="consumer-desktop-nav">
@@ -198,6 +230,12 @@ export function Consumer({ slug }: { slug: string }) {
                   <h1>{product.name}</h1>
                   <p>{t("welcome")}</p>
                   <span className="consumer-hero-brand">NOVA HOME · DEMO DATA</span>
+                  {identityUnit && (
+                    <span className="info-warning">
+                      {t("Unit identity resolved")}: {identityUnit.serial} ·{" "}
+                      {t("Identification is not proof of authenticity")}
+                    </span>
+                  )}
                 </div>
                 <div className="hero-bottom">
                   <span>
@@ -470,7 +508,16 @@ export function Consumer({ slug }: { slug: string }) {
                         ["SKU", product.sku],
                         ["GTIN", product.gtin],
                         ["ASIN", product.asin],
-                        [t("serial"), product.serial],
+                        [
+                          t("serial"),
+                          identityUnit?.serial || t("Select a registered unit for service"),
+                        ],
+                        [
+                          t("Identity status"),
+                          identity
+                            ? t("Resolved · identity is not proof of authenticity")
+                            : t("Model-level page"),
+                        ],
                       ].map(([k, v]) => (
                         <div key={k}>
                           <dt>{k}</dt>
@@ -586,6 +633,7 @@ export function Consumer({ slug }: { slug: string }) {
                           required
                           value={serial}
                           onChange={setSerial}
+                          disabled={Boolean(identityUnit)}
                         />
                       )}
                       {modal === "Warranty" && (
