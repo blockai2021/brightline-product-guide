@@ -882,6 +882,12 @@ export function Products({
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <Status value={entry?.published ? "Published" : "Draft"} />
+              <Button variant="outline" size="sm" asChild>
+                <Link to="/admin/printing" search={{ productId: form.id }}>
+                  <ClipboardList />
+                  {t("Print.title")}
+                </Link>
+              </Button>
               {entry?.published ? (
                 <Button variant="outline" size="sm" asChild>
                   <Link

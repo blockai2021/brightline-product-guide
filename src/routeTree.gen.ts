@@ -16,6 +16,7 @@ import { Route as AdminAfterSalesRouteImport } from './routes/admin.after-sales'
 import { Route as AdminContentRouteImport } from './routes/admin.content'
 import { Route as AdminDppRouteImport } from './routes/admin.dpp'
 import { Route as AdminMarketingRouteImport } from './routes/admin.marketing'
+import { Route as AdminPrintingRouteImport } from './routes/admin.printing'
 import { Route as AdminProductsRouteImport } from './routes/admin.products'
 import { Route as AdminTransparencyRouteImport } from './routes/admin.transparency'
 import { Route as PSlugRouteImport } from './routes/p.$slug'
@@ -58,6 +59,11 @@ const AdminMarketingRoute = AdminMarketingRouteImport.update({
   path: '/marketing',
   getParentRoute: () => AdminRoute,
 } as any)
+const AdminPrintingRoute = AdminPrintingRouteImport.update({
+  id: '/printing',
+  path: '/printing',
+  getParentRoute: () => AdminRoute,
+} as any)
 const AdminProductsRoute = AdminProductsRouteImport.update({
   id: '/products',
   path: '/products',
@@ -96,6 +102,7 @@ export interface FileRoutesByFullPath {
   '/admin/content': typeof AdminContentRoute
   '/admin/dpp': typeof AdminDppRoute
   '/admin/marketing': typeof AdminMarketingRoute
+  '/admin/printing': typeof AdminPrintingRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
@@ -110,6 +117,7 @@ export interface FileRoutesByTo {
   '/admin/content': typeof AdminContentRoute
   '/admin/dpp': typeof AdminDppRoute
   '/admin/marketing': typeof AdminMarketingRoute
+  '/admin/printing': typeof AdminPrintingRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
@@ -126,6 +134,7 @@ export interface FileRoutesById {
   '/admin/content': typeof AdminContentRoute
   '/admin/dpp': typeof AdminDppRoute
   '/admin/marketing': typeof AdminMarketingRoute
+  '/admin/printing': typeof AdminPrintingRoute
   '/admin/products': typeof AdminProductsRoute
   '/admin/transparency': typeof AdminTransparencyRoute
   '/p/$slug': typeof PSlugRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/dpp'
     | '/admin/marketing'
+    | '/admin/printing'
     | '/admin/products'
     | '/admin/transparency'
     | '/p/$slug'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/dpp'
     | '/admin/marketing'
+    | '/admin/printing'
     | '/admin/products'
     | '/admin/transparency'
     | '/p/$slug'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/admin/content'
     | '/admin/dpp'
     | '/admin/marketing'
+    | '/admin/printing'
     | '/admin/products'
     | '/admin/transparency'
     | '/p/$slug'
@@ -240,6 +252,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminMarketingRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/admin/printing': {
+      id: '/admin/printing'
+      path: '/printing'
+      fullPath: '/admin/printing'
+      preLoaderRoute: typeof AdminPrintingRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/admin/products': {
       id: '/admin/products'
       path: '/products'
@@ -290,6 +309,7 @@ interface AdminRouteChildren {
   AdminContentRoute: typeof AdminContentRoute
   AdminDppRoute: typeof AdminDppRoute
   AdminMarketingRoute: typeof AdminMarketingRoute
+  AdminPrintingRoute: typeof AdminPrintingRoute
   AdminProductsRoute: typeof AdminProductsRoute
   AdminTransparencyRoute: typeof AdminTransparencyRoute
   AdminIndexRoute: typeof AdminIndexRoute
@@ -300,6 +320,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminContentRoute: AdminContentRoute,
   AdminDppRoute: AdminDppRoute,
   AdminMarketingRoute: AdminMarketingRoute,
+  AdminPrintingRoute: AdminPrintingRoute,
   AdminProductsRoute: AdminProductsRoute,
   AdminTransparencyRoute: AdminTransparencyRoute,
   AdminIndexRoute: AdminIndexRoute,

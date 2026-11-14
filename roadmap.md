@@ -36,3 +36,9 @@
 - [x] Add searchable, filtered, paginated product catalog and safe CSV export
 - [x] Add three-language CSV/XLSX import wizard using C-007 parse/preview/apply
 - [x] Verify import persistence, conflict protection, existing QR and consumer flows on desktop/mobile
+
+# Issue #14 / L-009
+
+- [ ] Add product-scoped printing selection and frozen browser-local job records
+- [ ] Add stable CSV packages, manual confirmation, cancellation and identity-preserving reprints
+- [ ] Add limited A4 PDF previews and verify multilingual workflows and unchanged identities

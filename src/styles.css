@@ -2400,3 +2400,55 @@ td small {
     align-items: flex-start;
   }
 }
+
+.printing-page {
+  min-width: 0;
+}
+.printing-page h1 {
+  font-size: 26px;
+  font-weight: 700;
+}
+.print-filters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.printing-page select {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--background);
+  color: var(--foreground);
+  padding: 9px 12px;
+}
+.printing-page .table-wrap {
+  overflow-x: auto;
+}
+.printing-page table {
+  min-width: 680px;
+}
+.printing-page td {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+.print-confirm-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 32px;
+}
+@media (max-width: 700px) {
+  .print-filters,
+  .print-confirm-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .printing-page .section-head {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .printing-page button {
+    white-space: normal;
+    height: auto;
+    min-height: 36px;
+  }
+}

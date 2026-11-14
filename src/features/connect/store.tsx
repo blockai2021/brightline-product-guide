@@ -8,6 +8,7 @@ import {
   type ProductUnit,
 } from "./domain";
 import { initialState } from "./seed";
+import { PrintJobsProvider } from "./printing-store";
 const KEY = "icode-connect-demo-v2";
 const LEGACY_KEY = "icode-connect-demo-v1";
 type Store = {
@@ -188,7 +189,11 @@ export function DemoProvider({ children }: { children: ReactNode }) {
       return next;
     });
   }
-  return <Context.Provider value={{ state, ready, update }}>{children}</Context.Provider>;
+  return (
+    <Context.Provider value={{ state, ready, update }}>
+      <PrintJobsProvider>{children}</PrintJobsProvider>
+    </Context.Provider>
+  );
 }
 export function useDemo() {
   const store = useContext(Context);
