@@ -1287,6 +1287,18 @@ const adminCopy = {
     zh: "11月10日",
     de: "10. Nov.",
   },
+  "Basic Information": { en: "Basic Information", zh: "基本信息", de: "Grundinformationen" },
+  "Digital Content": { en: "Digital Content", zh: "产品内容", de: "Digitale Inhalte" },
+  Publishing: { en: "Publishing", zh: "发布管理", de: "Veröffentlichung" },
+  "Published version": { en: "Published version", zh: "已发布版本", de: "Veröffentlichte Version" },
+  "Last published": { en: "Last published", zh: "最近发布时间", de: "Zuletzt veröffentlicht" },
+  "Not published": { en: "Not published", zh: "尚未发布", de: "Nicht veröffentlicht" },
+  "Preview consumer page": {
+    en: "Preview consumer page",
+    zh: "预览消费者页面",
+    de: "Verbraucherseite ansehen",
+  },
+  "Publish update": { en: "Publish update", zh: "发布更新", de: "Aktualisierung veröffentlichen" },
   "Nov 14": {
     en: "Nov 14",
     zh: "11月14日",

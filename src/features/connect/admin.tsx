@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useDemo } from "./store";
@@ -43,7 +44,6 @@ const nav = [
   { label: "Dashboard", path: "/admin", icon: LayoutDashboard },
   { label: "Products", path: "/admin/products", icon: Box },
   { label: "Transparency", path: "/admin/transparency", icon: ShieldCheck },
-  { label: "Content", path: "/admin/content", icon: BookOpen },
   { label: "After-sales", path: "/admin/after-sales", icon: Headphones },
   { label: "Marketing & Community", path: "/admin/marketing", icon: Users },
   { label: "DPP Ready", path: "/admin/dpp", icon: Leaf },
@@ -86,6 +86,7 @@ export function AdminLayout() {
               <Link
                 key={n.path}
                 to={n.path}
+                activeOptions={{ exact: true, includeSearch: false }}
                 title={t(n.label)}
                 onClick={() => setMobileOpen(false)}
                 className={cn("nav-item", path === n.path && "active")}
@@ -695,8 +696,14 @@ export function Dashboard() {
     </>
   );
 }
-export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
-  const { t } = useAdminTranslation();
+export function Products({
+  tab,
+  onTabChange,
+}: {
+  tab: "basic" | "content" | "publishing";
+  onTabChange: (tab: "basic" | "content" | "publishing") => void;
+}) {
+  const { t, language } = useAdminTranslation();
   const { state, update, ready } = useDemo();
   const [selected, setSelected] = useState("demo-prod-airpure-001");
   const entry = state.products.find((p) => p.draft.id === selected);
@@ -759,19 +766,13 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
   return (
     <>
       <PageHeading
-        title={contentOnly ? t("Product content") : t("Products")}
-        subtitle={
-          contentOnly
-            ? t("Useful information, in your customers’ own language.")
-            : t("One product identity. Every customer touchpoint.")
-        }
+        title={t("Products")}
+        subtitle={t("One product identity. Every customer touchpoint.")}
       >
-        {!contentOnly && (
-          <Button onClick={create}>
-            <Plus />
-            {t("Create product")}
-          </Button>
-        )}
+        <Button onClick={create}>
+          <Plus />
+          {t("Create product")}
+        </Button>
       </PageHeading>
       <DemoNotice />
       <div className="editor-layout">
@@ -818,126 +819,180 @@ export function Products({ contentOnly = false }: { contentOnly?: boolean }) {
             </div>
             <Status value={entry?.published ? "Published" : "Draft"} />
           </div>
-          <div className="form-grid">
-            {!contentOnly && (
-              <>
-                <div className="product-image-editor">
-                  <img src={form.image} alt={form.name} width={220} height={220} />
-                  <label className="file-control">
-                    <Plus size={15} />
-                    {t("Change image")}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => imageFile(e.target.files?.[0])}
-                    />
-                  </label>
-                </div>
-                <div className="grid gap-4">
-                  <TextField
-                    label={t("Product name")}
-                    value={form.name}
-                    onChange={(v) => change("name", v)}
-                    required
+          <Tabs
+            value={tab}
+            onValueChange={(value) => {
+              if (value === "basic" || value === "content" || value === "publishing")
+                onTabChange(value);
+            }}
+          >
+            <TabsList className="product-tabs" aria-label={t("Products")}>
+              <TabsTrigger value="basic">
+                <Box size={16} />
+                {t("Basic Information")}
+              </TabsTrigger>
+              <TabsTrigger value="content">
+                <BookOpen size={16} />
+                {t("Digital Content")}
+              </TabsTrigger>
+              <TabsTrigger value="publishing">
+                <Check size={16} />
+                {t("Publishing")}
+              </TabsTrigger>
+            </TabsList>
+            <TabsContent value="basic" className="form-grid">
+              <div className="product-image-editor">
+                <img src={form.image} alt={form.name} width={220} height={220} />
+                <label className="file-control">
+                  <Plus size={15} />
+                  {t("Change image")}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => imageFile(e.target.files?.[0])}
                   />
-                  <TextField
-                    label={t("Brand")}
-                    value={form.brand}
-                    onChange={(v) => change("brand", v)}
-                  />
-                  <TextField
-                    label={t("Model")}
-                    value={form.model}
-                    onChange={(v) => change("model", v)}
-                  />
-                </div>
-                <TextField label="SKU" value={form.sku} onChange={(v) => change("sku", v)} />
+                </label>
+              </div>
+              <div className="grid gap-4">
                 <TextField
-                  label={t("GTIN · Demo Data")}
-                  value={form.gtin}
-                  onChange={(v) => change("gtin", v)}
+                  label={t("Product name")}
+                  value={form.name}
+                  onChange={(v) => change("name", v)}
+                  required
                 />
                 <TextField
-                  label={t("ASIN · Demo Data")}
-                  value={form.asin}
-                  onChange={(v) => change("asin", v)}
+                  label={t("Brand")}
+                  value={form.brand}
+                  onChange={(v) => change("brand", v)}
                 />
                 <TextField
-                  label={t("Brand serial number · Demo Data")}
-                  value={form.serial}
-                  onChange={(v) => change("serial", v)}
+                  label={t("Model")}
+                  value={form.model}
+                  onChange={(v) => change("model", v)}
                 />
-              </>
-            )}
-            <div className="col-span-full flex items-center justify-between mt-3">
-              <h3>{t("Localized content")}</h3>
-              <select
-                className="select-control"
-                aria-label={t("Content language")}
-                value={locale}
-                onChange={(e) => setLocale(e.target.value as Locale)}
-              >
-                <option value="en">{t("English")}</option>
-                <option value="de">{t("Deutsch")}</option>
-                <option value="zh">中文</option>
-              </select>
-            </div>
-            {(["description", "manual", "faq"] as const).map((k) => (
-              <div key={k} className="col-span-full">
-                <Field
-                  label={
-                    k === "description"
-                      ? t("Product description")
-                      : k === "manual"
-                        ? t("User manual · Instructions or HTTPS link")
-                        : t("Frequently asked questions")
-                  }
+              </div>
+              <TextField label="SKU" value={form.sku} onChange={(v) => change("sku", v)} />
+              <TextField
+                label={t("GTIN · Demo Data")}
+                value={form.gtin}
+                onChange={(v) => change("gtin", v)}
+              />
+              <TextField
+                label={t("ASIN · Demo Data")}
+                value={form.asin}
+                onChange={(v) => change("asin", v)}
+              />
+              <TextField
+                label={t("Brand serial number · Demo Data")}
+                value={form.serial}
+                onChange={(v) => change("serial", v)}
+              />
+            </TabsContent>
+            <TabsContent value="content" className="form-grid">
+              <div className="col-span-full flex flex-wrap gap-3 items-center justify-between mt-3">
+                <h3>{t("Localized content")}</h3>
+                <select
+                  className="select-control"
+                  aria-label={t("Content language")}
+                  value={locale}
+                  onChange={(e) => setLocale(e.target.value as Locale)}
                 >
-                  <textarea
-                    aria-label={
+                  <option value="en">{t("English")}</option>
+                  <option value="de">{t("Deutsch")}</option>
+                  <option value="zh">中文</option>
+                </select>
+              </div>
+              {(["description", "manual", "faq"] as const).map((k) => (
+                <div key={k} className="col-span-full">
+                  <Field
+                    label={
                       k === "description"
                         ? t("Product description")
                         : k === "manual"
-                          ? t("User manual")
+                          ? t("User manual · Instructions or HTTPS link")
                           : t("Frequently asked questions")
                     }
-                    className="textarea-control"
-                    rows={k === "description" ? 3 : 4}
-                    value={form[k][locale]}
-                    onChange={(e) => change(k, { ...form[k], [locale]: e.target.value })}
-                  />
-                </Field>
+                  >
+                    <textarea
+                      aria-label={
+                        k === "description"
+                          ? t("Product description")
+                          : k === "manual"
+                            ? t("User manual")
+                            : t("Frequently asked questions")
+                      }
+                      className="textarea-control"
+                      rows={k === "description" ? 3 : 4}
+                      value={form[k][locale]}
+                      onChange={(e) => change(k, { ...form[k], [locale]: e.target.value })}
+                    />
+                  </Field>
+                </div>
+              ))}
+              <div className="col-span-full">
+                <TextField
+                  label={t("Video link · HTTPS URL (optional)")}
+                  type="url"
+                  value={form.video}
+                  onChange={(v) => change("video", v)}
+                />
               </div>
-            ))}
-            <div className="col-span-full">
-              <TextField
-                label={t("Video link · HTTPS URL (optional)")}
-                type="url"
-                value={form.video}
-                onChange={(v) => change("video", v)}
-              />
-            </div>
-          </div>
+            </TabsContent>
+            <TabsContent value="publishing">
+              <dl className="publishing-details">
+                <div>
+                  <dt>{t("Draft")}</dt>
+                  <dd>
+                    <Status value={dirty ? "Unsaved changes" : "Saved draft"} />
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t("Published version")}</dt>
+                  <dd>
+                    <Status value={entry?.published ? "Published" : "Not published"} />
+                  </dd>
+                </div>
+                <div>
+                  <dt>{t("Last published")}</dt>
+                  <dd>
+                    {entry?.published?.publishedAt
+                      ? new Date(entry.published.publishedAt).toLocaleString(
+                          language === "zh" ? "zh-CN" : language === "de" ? "de-DE" : "en-GB",
+                        )
+                      : t("Not published")}
+                  </dd>
+                </div>
+              </dl>
+              <Button variant="outline" asChild disabled={!entry?.published}>
+                {entry?.published ? (
+                  <Link to="/p/$slug" params={{ slug: entry.published.slug }}>
+                    <ExternalLink />
+                    {t("Preview consumer page")}
+                  </Link>
+                ) : (
+                  <span>
+                    <ExternalLink />
+                    {t("Preview consumer page")}
+                  </span>
+                )}
+              </Button>
+              <div className="editor-footer">
+                <p>{t("Only published versions appear on consumer pages.")}</p>
+                <Button disabled={!form.name.trim()} onClick={() => save(true)}>
+                  <Check />
+                  {t("Publish update")}
+                </Button>
+              </div>
+            </TabsContent>
+          </Tabs>
           <div className="editor-footer">
             <p>{t("Only published versions appear on consumer pages.")}</p>
             <div className="flex gap-2">
               <Button variant="outline" onClick={() => save()}>
                 {t("Save draft")}
               </Button>
-              <Button disabled={!form.name.trim()} onClick={() => save(true)}>
-                <Check />
-                {t("Publish product")}
-              </Button>
             </div>
           </div>
-          {entry?.published && (
-            <Button variant="link" asChild>
-              <Link to="/p/$slug" params={{ slug: form.slug }}>
-                {t("View published product")}
-                <ExternalLink />
-              </Link>
-            </Button>
-          )}
         </section>
       </div>
     </>

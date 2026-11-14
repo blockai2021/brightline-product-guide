@@ -1,10 +1,8 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { Products } from "@/features/connect/admin";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { pageMeta } from "@/features/connect/meta";
 export const Route = createFileRoute("/admin/content")({
-  component: ContentPage,
+  beforeLoad: () => {
+    throw redirect({ to: "/admin/products", search: { tab: "content" }, replace: true });
+  },
   head: () => pageMeta("Multilingual content", "Manage product guides, FAQs and video resources."),
 });
-function ContentPage() {
-  return <Products contentOnly />;
-}

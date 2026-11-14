@@ -1,4 +1,5 @@
 <!-- LOVABLE:BEGIN -->
+
 > [!IMPORTANT]
 > This project is connected to [Lovable](https://lovable.dev). Avoid rewriting
 > published git history — force pushing, or rebasing/amending/squashing commits
@@ -27,10 +28,13 @@ use the editor.
   `LOVABLE_API_KEY`. When Lovable does not provide one, users can bring their
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
+
 <!-- LOVABLE:END -->
 
 ## Application architecture
+
 - Use a typed browser-local demo repository through a shared React provider; isolate pure domain operations so a future API repository can replace persistence.
 - Keep editable product drafts separate from immutable published snapshots; consumer pages read only published snapshots to prevent leaking unpublished edits.
 - Use TanStack file routes for admin sections and a mobile-first consumer entry; both share the same repository and localized product types.
 - Keep admin UI copy namespaced in the shared locale dictionaries and persist each audience's language independently after hydration; language changes must not alter domain values or editable content languages.
+- Use one product editor with URL-addressable basic, content and publishing tabs; redirect the legacy content route to its content tab to preserve links and a single shared draft form.
