@@ -32,7 +32,7 @@
 1. **Issue First**：一次只完成指定 Issue；先读本索引与 `AGENTS.md`，再读 issue 列出的 2–5 个相关文件；对大型 `admin.tsx`（约 59KB）/ `translations.ts`（约 39KB）优先按组件名/关键词定位并读取局部。
 2. **Don't repeat PRD**：不要把完整 Google Docs 或整个仓库复制进聊天；只摘取当前 Issue 直接涉及的要求，必要时查看指定章节。
 3. **Small diffs**：优先复用已有组件、样式、数据函数；不重写页面、不全局重命名、不大范围自动格式化；明确禁止改动无关的页面或品牌视觉。
-4. **No collision**：Codex 负责领域模型、测试、API、二维码生成；Lovable 负责页面交互和视觉。两个工具不得并行改 `admin.tsx`、`consumer.tsx` 等同一文件，先完成业务 PR 再让 Lovable 接入。
+4. **职责边界（2026-11-14 生效）**：Lovable 负责 React 前端页面、可视化、前端交互/表单、真实 QR 渲染与浏览器 PNG/SVG/CSV 下载；Codex 负责可复用领域规则、标识与 URI 约束、服务端/数据库/API 架构及自动化测试。二维码渲染库和前端下载优先由 Lovable 实施，Codex 不重复改 UI。若 Lovable 托管数据库/密钥/连接器，实际 schema 与 Secrets 配置遵守 AGENTS.md，交由 Lovable 操作；Codex 可设计与审查但不得擅改托管迁移。两工具不得并行编辑 `admin.tsx` / `consumer.tsx` 等同一文件。C-004 Core 先合并，L-006 再接入。
 5. **Git safety**：Codex 在独立分支提交 PR，不直接推 main；Lovable 同步约束见 `AGENTS.md`；严禁 force-push/重写已推历史；生成文件与 Lovable 管理的数据库迁移不能擅改。
 6. **Verification**：只运行与变更相关的验证，最终在需要时运行 TypeScript/Vitest/build；报告实际执行结果及未测项目，不把“本地模拟”写成“已部署/官方验真”。
 7. **Compact output**：输出不超过：变更文件、实现点、测试结果、风险/待办四项。无需长篇复述背景和完整源代码。
