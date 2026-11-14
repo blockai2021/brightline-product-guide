@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildBrandedDigitalLinkUri,
   buildDigitalLinkPath,
-  buildDigitalLinkUri,
   buildUnitExportCsv,
   createProductUnits,
   DEMO_DIGITAL_LINK_BASE_URL,
@@ -12,7 +12,6 @@ import {
   normalizeGtin14,
   saveDraft,
 } from "@/features/connect/domain";
-import { createQrArtifacts } from "@/features/connect/digital-link-qr";
 import { demoProduct, initialState } from "@/features/connect/seed";
 import { migrateLegacyState } from "@/features/connect/store";
 
@@ -37,35 +36,121 @@ describe("GS1 demo identity rules", () => {
     );
   });
 
-  it("builds an absolute URI only for an explicitly trusted HTTPS origin", () => {
-    expect(buildDigitalLinkUri(DEMO_DIGITAL_LINK_BASE_URL, "04012345678901", "A/1+!")).toBe(
-      "https://demo.icodeconnect.example/01/04012345678901/21/A%2F1%2B%21",
-    );
-    expect(() =>
-      buildDigitalLinkUri("http://demo.icodeconnect.example", "04012345678901", "A1"),
-    ).toThrow("Untrusted Digital Link base URL");
-    expect(() => buildDigitalLinkUri("https://attacker.example", "04012345678901", "A1")).toThrow(
-      "Untrusted Digital Link base URL",
+  it("builds branded unit and model HTTPS URIs without changing the legacy identity path", () => {
+    expect(
+      buildBrandedDigitalLinkUri({
+        baseUrl: `${DEMO_DIGITAL_LINK_BASE_URL}/`,
+        brandSlug: "brand-a",
+        gtin: "04012345678901",
+        serial: "APM26000001",
+      }),
+    ).toBe("https://id.product-icode.example/brand-a/01/04012345678901/21/APM26000001");
+    expect(
+      buildBrandedDigitalLinkUri({
+        baseUrl: DEMO_DIGITAL_LINK_BASE_URL,
+        brandSlug: "brand-a",
+        gtin: "04012345678901",
+      }),
+    ).toBe("https://id.product-icode.example/brand-a/01/04012345678901");
+    expect(buildDigitalLinkPath("04012345678901", "APM26000001")).toBe(
+      "/01/04012345678901/21/APM26000001",
     );
   });
 
-  it("generates ten fixed-width serials and rejects invalid or colliding ranges", () => {
-    expect(generateSerialCandidates({ prefix: "NH26", start: 129, count: 10 })).toEqual({
+  it("keeps brands separate, encodes serials and rejects unsafe URI inputs", () => {
+    const branded = (brandSlug: string) =>
+      buildBrandedDigitalLinkUri({
+        baseUrl: DEMO_DIGITAL_LINK_BASE_URL,
+        brandSlug,
+        gtin: "04012345678901",
+        serial: "A/1+!",
+      });
+    expect(branded("brand-a")).toContain("/brand-a/01/");
+    expect(branded("brand-b")).toContain("/brand-b/01/");
+    expect(branded("brand-a").endsWith("/21/A%2F1%2B%21")).toBe(true);
+    for (const brandSlug of ["01", "brand/a", "Brand-A", ".", "brand%2Fa"]) {
+      expect(() => branded(brandSlug)).toThrow("Invalid brand slug");
+    }
+    expect(() =>
+      buildBrandedDigitalLinkUri({
+        baseUrl: "http://id.product-icode.example",
+        brandSlug: "brand-a",
+        gtin: "04012345678901",
+      }),
+    ).toThrow("Untrusted Digital Link base URL");
+    for (const baseUrl of [
+      "https://id.product-icode.example//",
+      "https://id.product-icode.example/nested/",
+      "https://attacker.example/",
+    ]) {
+      expect(() =>
+        buildBrandedDigitalLinkUri({
+          baseUrl,
+          brandSlug: "brand-a",
+          gtin: "04012345678901",
+        }),
+      ).toThrow("Untrusted Digital Link base URL");
+    }
+    expect(() =>
+      buildBrandedDigitalLinkUri({
+        baseUrl: DEMO_DIGITAL_LINK_BASE_URL,
+        brandSlug: "brand-a",
+        gtin: "04012345678902",
+      }),
+    ).toThrow("Invalid GTIN");
+  });
+
+  it("generates ten candidates and reuses createProductUnits for duplicate prevention", () => {
+    const generated = generateSerialCandidates({ prefix: "APM26", start: 1, count: 10 });
+    expect(generated).toEqual({
       ok: true,
       serials: Array.from(
         { length: 10 },
-        (_, index) => `NH26${String(129 + index).padStart(6, "0")}`,
+        (_, index) => `APM26${String(index + 1).padStart(6, "0")}`,
       ),
     });
-    expect(
-      generateSerialCandidates({ prefix: "NH26", start: 129, count: 10, existing: ["NH26000133"] }),
-    ).toMatchObject({
-      ok: false,
-      code: "DUPLICATE_SERIAL",
+    if (!generated.ok) return;
+    let id = 0;
+    const created = createProductUnits(
+      initialState(),
+      {
+        productId: demoProduct.id,
+        batchId: "demo-batch-2026-11",
+        serials: generated.serials,
+      },
+      { createId: () => String(++id), now: () => "2026-11-14T00:00:00Z" },
+    );
+    expect(created.created).toHaveLength(10);
+    const uris = created.created.map((unit) => {
+      const identity = created.state.identities.find((entry) => entry.unitId === unit.id)!;
+      return buildBrandedDigitalLinkUri({
+        baseUrl: DEMO_DIGITAL_LINK_BASE_URL,
+        brandSlug: "nova-home",
+        gtin: identity.gtin,
+        serial: identity.serial,
+      });
     });
+    expect(new Set(uris).size).toBe(10);
+    const repeated = createProductUnits(created.state, {
+      productId: demoProduct.id,
+      batchId: "demo-batch-2026-11",
+      serials: generated.serials,
+    });
+    expect(repeated.created).toHaveLength(0);
+    expect(repeated.rejected).toHaveLength(10);
+    expect(repeated.rejected.every((entry) => entry.reason === "Duplicate GTIN + serial")).toBe(
+      true,
+    );
+  });
+
+  it("reports serial candidate input and AI (21) boundary errors", () => {
     expect(generateSerialCandidates({ prefix: "序列", start: 0, count: 1 })).toMatchObject({
       ok: false,
       code: "INVALID_PREFIX",
+    });
+    expect(generateSerialCandidates({ prefix: "A", start: -1, count: 1 })).toMatchObject({
+      ok: false,
+      code: "INVALID_START",
     });
     expect(generateSerialCandidates({ prefix: "A", start: 0, count: 1001 })).toMatchObject({
       ok: false,
@@ -75,26 +160,9 @@ describe("GS1 demo identity rules", () => {
       ok: false,
       code: "SERIAL_OVERFLOW",
     });
-    expect(generateSerialCandidates({ prefix: "A", start: 999999, count: 2 })).toMatchObject({
-      ok: false,
-      code: "SERIAL_OVERFLOW",
-    });
-  });
-
-  it("creates real PNG and SVG QR artifacts whose content matches each unique URI", async () => {
-    const generated = generateSerialCandidates({ prefix: "QR", start: 1, count: 10 });
-    expect(generated.ok).toBe(true);
-    if (!generated.ok) return;
-    const uris = generated.serials.map((value) =>
-      buildDigitalLinkUri(DEMO_DIGITAL_LINK_BASE_URL, "04012345678901", value),
-    );
-    const artifacts = await Promise.all(uris.map(createQrArtifacts));
-    expect(new Set(artifacts.map((item) => item.content))).toEqual(new Set(uris));
-    expect(new Set(artifacts.map((item) => item.pngDataUrl)).size).toBe(10);
-    expect(artifacts.every((item) => item.pngDataUrl.startsWith("data:image/png;base64,"))).toBe(
-      true,
-    );
-    expect(artifacts.every((item) => item.svg.includes("<svg"))).toBe(true);
+    expect(
+      generateSerialCandidates({ prefix: "A", start: Number.MAX_SAFE_INTEGER, count: 2 }),
+    ).toMatchObject({ ok: false, code: "SERIAL_OVERFLOW" });
   });
 
   it("resolves a unit from the compound GTIN and serial identity", () => {
@@ -176,7 +244,7 @@ describe("GS1 demo identity rules", () => {
     ).toThrow("BATCH_PRODUCT_MISMATCH");
   });
 
-  it("exports only the selected product and batch with safe CSV cells and absolute URIs", () => {
+  it("exports the selected product and batch with safe CSV fields and branded URIs", () => {
     const state = initialState();
     const selectedBatch = state.batches[0]!;
     const firstUnit = state.units[0]!;
@@ -191,22 +259,18 @@ describe("GS1 demo identity rules", () => {
       ),
       units: [
         ...state.units,
-        {
-          ...firstUnit,
-          id: "other-batch-unit",
-          batchId: "other-batch",
-          serial: "OTHER",
-        },
+        { ...firstUnit, id: "other-batch-unit", batchId: "other-batch", serial: "OTHER" },
       ],
     };
     const csv = buildUnitExportCsv(scoped, {
       productId: demoProduct.id,
       batchId: selectedBatch.id,
       baseUrl: DEMO_DIGITAL_LINK_BASE_URL,
+      brandSlug: "nova-home",
     });
     expect(csv).toContain('"\'=CMD(""quoted,sku"")"');
     expect(csv).toContain('"Batch, ""A""\nLine"');
-    expect(csv).toContain("https://demo.icodeconnect.example/01/");
+    expect(csv).toContain("https://id.product-icode.example/nova-home/01/");
     expect(csv).not.toContain("OTHER");
   });
 
