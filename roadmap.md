@@ -62,6 +62,8 @@
 
 # Issue #26 / L-014
 
+- [x] Inject real preview service session identity/time, separate it from build identity, and verify refresh/restart and copying
+- [ ] Directly verify hosted lovableproject.com preview — blocked: actual URL redirects the verification browser to Lovable login; local service metadata is verified
 - [x] Correct live-preview hostname classification and localized missing-preview metadata; verify domain and metadata tests
 - [x] Finalize: add a build-only UUID shared with the build timestamp, verify copying and document deployment-record linkage
 

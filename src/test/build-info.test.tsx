@@ -4,14 +4,63 @@ import {
   buildInfo,
   environmentForHost,
   metadataForDisplay,
+  gitShaForDisplay,
   readBuildInfo,
+  readPreviewInfo,
+  showsPreviewSession,
   versionReport,
 } from "@/features/connect/build-info";
 import { BuildInfoPanel } from "@/features/connect/build-info-panel";
 import { AdminLanguageProvider } from "@/features/connect/language";
-import { createBuildStamp, demoMetadataDefines } from "../../build/demo-metadata";
+import {
+  createBuildStamp,
+  createPreviewStamp,
+  demoMetadataDefines,
+} from "../../build/demo-metadata";
 
 describe("Deployment identity integrity", () => {
+  it("injects one immutable service session across refreshes and creates another on restart", () => {
+    const session = createPreviewStamp();
+    const defines = demoMetadataDefines({}, "serve", "", "", session);
+    expect(demoMetadataDefines({}, "serve", "", "", session)).toEqual(defines);
+    const info = readPreviewInfo({
+      sessionId: JSON.parse(defines["import.meta.env.VITE_PREVIEW_SESSION_ID"] || "null"),
+      startedAt: JSON.parse(defines["import.meta.env.VITE_PREVIEW_STARTED_AT"] || "null"),
+    });
+    expect(info.sessionId).toBe(session.sessionId);
+    expect(info.startedAt).toBe(session.startedAt);
+    expect(Object.isFrozen(info)).toBe(true);
+    expect(Object.isFrozen(session)).toBe(true);
+    expect(createPreviewStamp().sessionId).not.toBe(session.sessionId);
+    expect(JSON.parse(defines["import.meta.env.VITE_BUILD_ID"] || "null")).toBe("");
+    expect(JSON.parse(defines["import.meta.env.VITE_BUILD_TIME"] || "null")).toBe("");
+  });
+  it("never injects a development session into a production artifact", () => {
+    const build = createBuildStamp();
+    const defines = demoMetadataDefines(
+      {},
+      "build",
+      build.builtAt,
+      build.buildId,
+      createPreviewStamp(),
+    );
+    expect(JSON.parse(defines["import.meta.env.VITE_PREVIEW_SESSION_ID"] || "null")).toBe("");
+    expect(JSON.parse(defines["import.meta.env.VITE_PREVIEW_STARTED_AT"] || "null")).toBe("");
+    expect(JSON.parse(defines["import.meta.env.VITE_BUILD_ID"] || "null")).toBe(build.buildId);
+    expect(JSON.parse(defines["import.meta.env.VITE_BUILD_TIME"] || "null")).toBe(build.builtAt);
+    expect(JSON.parse(defines["import.meta.env.VITE_DEPLOY_TIME"] || "null")).toBe("");
+  });
+  it("validates session metadata without manufacturing missing values", () => {
+    expect(readPreviewInfo({ sessionId: "fake", startedAt: "today" })).toEqual({
+      sessionId: "Unknown",
+      startedAt: "Unknown",
+    });
+    expect(showsPreviewSession("Stable Demo", readPreviewInfo({}))).toBe(false);
+    expect(showsPreviewSession("Unknown", readPreviewInfo({}))).toBe(false);
+    expect(gitShaForDisplay(readBuildInfo({}), "zh")).toBe("未验证");
+    const sha = "0123456789abcdef0123456789abcdef01234567";
+    expect(gitShaForDisplay(readBuildInfo({ gitSha: sha }), "zh")).toBe(sha);
+  });
   it.each(["localhost", "127.0.0.1"])("classifies %s as Development", (host) => {
     expect(environmentForHost(host)).toBe("Development");
   });
@@ -204,7 +253,9 @@ describe("Deployment identity integrity", () => {
         `${window.location.origin}/admin`,
       );
       await waitFor(() => expect(writeText).toHaveBeenCalledWith(report));
-      expect(report.split("\n")[3]).toBe(`Git Commit SHA: ${buildInfo.gitSha}`);
+      expect(report.split("\n")[3]).toBe(
+        `Git Commit SHA: ${gitShaForDisplay(buildInfo, language)}`,
+      );
       expect(localStorage.getItem("icode-connect-demo-v2")).toBe(before);
       rendered.unmount();
     },

@@ -10,6 +10,17 @@ export type BuildInfo = Readonly<{
   buildId: string;
   deployedAt: string;
 }>;
+export type PreviewInfo = Readonly<{ sessionId: string; startedAt: string }>;
+
+function uuid(value?: string): string {
+  return /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(value || "")
+    ? String(value)
+    : "Unknown";
+}
+
+export function readPreviewInfo(input: { sessionId?: string; startedAt?: string }): PreviewInfo {
+  return Object.freeze({ sessionId: uuid(input.sessionId), startedAt: timestamp(input.startedAt) });
+}
 
 function timestamp(value?: string): string {
   if (
@@ -37,11 +48,7 @@ export function readBuildInfo(input: {
       ? String(input.gitSha).toLowerCase()
       : "Unknown",
     builtAt: timestamp(input.builtAt),
-    buildId: /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
-      input.buildId || "",
-    )
-      ? String(input.buildId)
-      : "Unknown",
+    buildId: uuid(input.buildId),
     deployedAt: timestamp(input.deployedAt),
   });
 }
@@ -87,11 +94,27 @@ export const buildInfo = readBuildInfo({
   deployedAt: import.meta.env["VITE_DEPLOY_TIME"],
 });
 
+export const previewInfo = readPreviewInfo({
+  sessionId: import.meta.env["VITE_PREVIEW_SESSION_ID"],
+  startedAt: import.meta.env["VITE_PREVIEW_STARTED_AT"],
+});
+
+export function gitShaForDisplay(info: BuildInfo, locale: Locale): string {
+  return info.gitSha === "Unknown" ? translateAdmin(locale, "Build.unverified") : info.gitSha;
+}
+
+export function showsPreviewSession(environment: DemoEnvironment, preview: PreviewInfo): boolean {
+  return (
+    environment === "Preview" || (environment === "Development" && preview.sessionId !== "Unknown")
+  );
+}
+
 export function versionReport(
   info: BuildInfo,
   environment: DemoEnvironment,
   locale: Locale,
   url: string,
+  preview: PreviewInfo = previewInfo,
 ) {
   const t = (key: string) => translateAdmin(locale, key);
   const display = (value: string) => metadataForDisplay(value, environment, locale);
@@ -99,7 +122,14 @@ export function versionReport(
     "Product iCode Connect",
     `${t("Build.version")}: ${info.version}${info.versionApproved ? "" : ` (${t("Build.provisional")})`}`,
     `${t("Build.environment")}: ${t(`Build.${environment}`)}`,
-    `Git Commit SHA: ${display(info.gitSha)}`,
+    `Git Commit SHA: ${gitShaForDisplay(info, locale)}`,
+    ...(showsPreviewSession(environment, preview)
+      ? [
+          `${t("Build.previewId")}: ${display(preview.sessionId)}`,
+          `${t("Build.previewStartedAt")}: ${display(preview.startedAt)}`,
+          t("Build.previewIdentity"),
+        ]
+      : []),
     `${t("Build.builtAt")}: ${display(info.builtAt)}`,
     `Build ID: ${display(info.buildId)}`,
     `${t("Build.deployedAt")}: ${display(info.deployedAt)}`,

@@ -6,7 +6,10 @@ import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/compone
 import {
   buildInfo,
   environmentForHost,
+  gitShaForDisplay,
   metadataForDisplay,
+  previewInfo,
+  showsPreviewSession,
   versionReport,
   type DemoEnvironment,
 } from "./build-info";
@@ -24,6 +27,7 @@ export function BuildInfoPanel() {
   }, []);
   const report = versionReport(buildInfo, environment, language, url);
   const display = (value: string) => metadataForDisplay(value, environment, language);
+  const sha = gitShaForDisplay(buildInfo, language);
   async function copyVersion() {
     try {
       await navigator.clipboard.writeText(report);
@@ -41,13 +45,9 @@ export function BuildInfoPanel() {
         <span className="font-medium text-foreground">Browser-local Demo</span>
         <span>{buildInfo.version}</span>
         <span>{t(`Build.${environment}`)}</span>
-        <span title={display(buildInfo.gitSha)}>
+        <span title={sha}>
           Commit:{" "}
-          <code>
-            {buildInfo.gitSha === "Unknown"
-              ? display(buildInfo.gitSha)
-              : buildInfo.gitSha.slice(0, 12)}
-          </code>
+          <code>{buildInfo.gitSha === "Unknown" ? sha : buildInfo.gitSha.slice(0, 12)}</code>
         </span>
         <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
           <Info />
@@ -78,11 +78,22 @@ export function BuildInfoPanel() {
             <dd>{t(`Build.${environment}`)}</dd>
             <dt>Git Commit SHA</dt>
             <dd>
-              <code>{display(buildInfo.gitSha)}</code>
+              <code>{sha}</code>
               {buildInfo.gitSha === "Unknown" && environment !== "Preview" && (
                 <small>{t("Build.noSha")}</small>
               )}
             </dd>
+            {showsPreviewSession(environment, previewInfo) && (
+              <>
+                <dt>{t("Build.previewId")}</dt>
+                <dd>
+                  <code>{display(previewInfo.sessionId)}</code>
+                  <small>{t("Build.previewIdentity")}</small>
+                </dd>
+                <dt>{t("Build.previewStartedAt")}</dt>
+                <dd>{display(previewInfo.startedAt)}</dd>
+              </>
+            )}
             <dt>{t("Build.builtAt")}</dt>
             <dd>{display(buildInfo.builtAt)}</dd>
             <dt>{t("Build.id")}</dt>
