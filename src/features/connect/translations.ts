@@ -2085,6 +2085,7 @@ const adminCopy = {
   "Build.Preview": { en: "Preview", zh: "预览环境", de: "Vorschau" },
   "Build.Stable Demo": { en: "Stable Demo", zh: "已发布 Demo", de: "Veröffentlichtes Demo" },
   "Build.Unknown": { en: "Unknown", zh: "Unknown · 未提供", de: "Unknown · nicht angegeben" },
+  "Build.previewUnavailable": { en: "Not provided by the preview environment", zh: "预览环境未提供", de: "Von der Vorschauumgebung nicht bereitgestellt" },
   "Build.builtAt": { en: "Build time (UTC)", zh: "构建时间（UTC）", de: "Build-Zeit (UTC)" },
   "Build.id": { en: "Build ID", zh: "构建 ID（Build ID）", de: "Build-ID" },
   "Build.deployedAt": { en: "Deploy time (UTC)", zh: "发布时间（UTC）", de: "Veröffentlichungszeit (UTC)" },

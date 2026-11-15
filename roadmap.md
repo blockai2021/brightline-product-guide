@@ -62,6 +62,7 @@
 
 # Issue #26 / L-014
 
+- [x] Correct live-preview hostname classification and localized missing-preview metadata; verify domain and metadata tests
 - [x] Finalize: add a build-only UUID shared with the build timestamp, verify copying and document deployment-record linkage
 
 - [x] Follow-up: verify the live environment, harden metadata parsing/injection tests and document supported alternatives

@@ -3,7 +3,13 @@ import { Copy, Info } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
-import { buildInfo, environmentForHost, versionReport, type DemoEnvironment } from "./build-info";
+import {
+  buildInfo,
+  environmentForHost,
+  metadataForDisplay,
+  versionReport,
+  type DemoEnvironment,
+} from "./build-info";
 import { useAdminTranslation } from "./language";
 
 export function BuildInfoPanel() {
@@ -17,6 +23,7 @@ export function BuildInfoPanel() {
     setUrl(`${window.location.origin}/admin`);
   }, []);
   const report = versionReport(buildInfo, environment, language, url);
+  const display = (value: string) => metadataForDisplay(value, environment, language);
   async function copyVersion() {
     try {
       await navigator.clipboard.writeText(report);
@@ -34,8 +41,13 @@ export function BuildInfoPanel() {
         <span className="font-medium text-foreground">Browser-local Demo</span>
         <span>{buildInfo.version}</span>
         <span>{t(`Build.${environment}`)}</span>
-        <span title={buildInfo.gitSha}>
-          Commit: <code>{buildInfo.gitSha.slice(0, 12)}</code>
+        <span title={display(buildInfo.gitSha)}>
+          Commit:{" "}
+          <code>
+            {buildInfo.gitSha === "Unknown"
+              ? display(buildInfo.gitSha)
+              : buildInfo.gitSha.slice(0, 12)}
+          </code>
         </span>
         <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
           <Info />
@@ -66,17 +78,19 @@ export function BuildInfoPanel() {
             <dd>{t(`Build.${environment}`)}</dd>
             <dt>Git Commit SHA</dt>
             <dd>
-              <code>{buildInfo.gitSha}</code>
-              {buildInfo.gitSha === "Unknown" && <small>{t("Build.noSha")}</small>}
+              <code>{display(buildInfo.gitSha)}</code>
+              {buildInfo.gitSha === "Unknown" && environment !== "Preview" && (
+                <small>{t("Build.noSha")}</small>
+              )}
             </dd>
             <dt>{t("Build.builtAt")}</dt>
-            <dd>{buildInfo.builtAt}</dd>
+            <dd>{display(buildInfo.builtAt)}</dd>
             <dt>{t("Build.id")}</dt>
             <dd>
-              <code>{buildInfo.buildId}</code>
+              <code>{display(buildInfo.buildId)}</code>
             </dd>
             <dt>{t("Build.deployedAt")}</dt>
-            <dd>{buildInfo.deployedAt}</dd>
+            <dd>{display(buildInfo.deployedAt)}</dd>
           </dl>
           <p className="text-sm text-muted-foreground">{t("Build.limitations")}</p>
           <Button variant="outline" onClick={copyVersion}>

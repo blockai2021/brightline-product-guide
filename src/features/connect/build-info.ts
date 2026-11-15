@@ -50,9 +50,33 @@ export function environmentForHost(hostname: string): DemoEnvironment {
   hostname = hostname.toLowerCase().replace(/\.$/, "");
   if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1")
     return "Development";
-  if (/^id-preview(?:-\d+)?--[a-z0-9-]+\.lovable\.app$/.test(hostname)) return "Preview";
+  if (/^[a-z0-9-]+(?:\.[a-z0-9-]+)*\.lovableproject(?:-dev)?\.com$/.test(hostname))
+    return "Preview";
+  const hostingSuffix = /\.(?:lovable\.app|gpt-eng\.com|gptengineer\.run)$/;
+  if (hostingSuffix.test(hostname)) {
+    const labels = hostname.replace(hostingSuffix, "").split(".");
+    const first = labels[0] || "";
+    if (
+      (labels.length <= 2 && /^(?:id-preview|preview)(?:-[a-z0-9]+)?--.+$/.test(first)) ||
+      (labels.length === 1 && /^project--[a-z0-9-]+-dev$/.test(first)) ||
+      (labels.length === 2 && /^live--[0-9a-f-]{36}(?:-thr_[a-z0-9]+)?$/.test(first))
+    )
+      return "Preview";
+  }
   if (hostname === "product-icode-platform.lovable.app") return "Stable Demo";
   return "Unknown";
+}
+
+// Presentation only: retain validated metadata and distinguish a preview's
+// missing fields from missing published deployment evidence.
+export function metadataForDisplay(
+  value: string,
+  environment: DemoEnvironment,
+  locale: Locale,
+): string {
+  return value === "Unknown" && environment === "Preview"
+    ? translateAdmin(locale, "Build.previewUnavailable")
+    : value;
 }
 
 export const buildInfo = readBuildInfo({
@@ -70,14 +94,15 @@ export function versionReport(
   url: string,
 ) {
   const t = (key: string) => translateAdmin(locale, key);
+  const display = (value: string) => metadataForDisplay(value, environment, locale);
   return [
     "Product iCode Connect",
     `${t("Build.version")}: ${info.version}${info.versionApproved ? "" : ` (${t("Build.provisional")})`}`,
     `${t("Build.environment")}: ${t(`Build.${environment}`)}`,
-    `Git Commit SHA: ${info.gitSha}`,
-    `${t("Build.builtAt")}: ${info.builtAt}`,
-    `Build ID: ${info.buildId}`,
-    `${t("Build.deployedAt")}: ${info.deployedAt}`,
+    `Git Commit SHA: ${display(info.gitSha)}`,
+    `${t("Build.builtAt")}: ${display(info.builtAt)}`,
+    `Build ID: ${display(info.buildId)}`,
+    `${t("Build.deployedAt")}: ${display(info.deployedAt)}`,
     `${t("Build.site")}: ${url}`,
     "Browser-local Demo",
     t("Build.limitations"),

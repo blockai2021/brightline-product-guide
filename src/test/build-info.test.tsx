@@ -3,6 +3,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import {
   buildInfo,
   environmentForHost,
+  metadataForDisplay,
   readBuildInfo,
   versionReport,
 } from "@/features/connect/build-info";
@@ -11,6 +12,48 @@ import { AdminLanguageProvider } from "@/features/connect/language";
 import { createBuildStamp, demoMetadataDefines } from "../../build/demo-metadata";
 
 describe("Deployment identity integrity", () => {
+  it.each(["localhost", "127.0.0.1"])("classifies %s as Development", (host) => {
+    expect(environmentForHost(host)).toBe("Development");
+  });
+  it.each([
+    "4812f772-7c71-5ddd-8106-387e5238d766.lovableproject.com",
+    "4812F772-7C71-5DDD-8106-387E5238D766.LOVABLEPROJECT.COM.",
+    "draft.workspace.lovableproject.com",
+    "project.lovableproject-dev.com",
+    "id-preview-abc123--4812f772.lovable.app",
+    "preview-6--product-icode-platform.workspace.lovable.app",
+    "project--4812f772-7c71-5ddd-8106-387e5238d766-dev.lovable.app",
+    "live--4812f772-7c71-5ddd-8106-387e5238d766.workspace.lovable.app",
+  ])("classifies supported preview host %s", (host) => {
+    expect(environmentForHost(host)).toBe("Preview");
+  });
+  it.each([
+    "lovableproject.com",
+    "project.lovableproject.com.evil.test",
+    "notlovableproject.com",
+    "unknown.lovable.app",
+    "project--4812f772-7c71-5ddd-8106-387e5238d766.lovable.app",
+    "example.com",
+  ])("keeps unrecognized host %s Unknown", (host) => {
+    expect(environmentForHost(host)).toBe("Unknown");
+  });
+  it("does not replace validated metadata when presenting preview omissions", () => {
+    const missing = readBuildInfo({});
+    expect(metadataForDisplay(missing.gitSha, "Preview", "zh")).toBe("预览环境未提供");
+    expect(metadataForDisplay(missing.gitSha, "Stable Demo", "zh")).toBe("Unknown");
+    expect(metadataForDisplay(missing.gitSha, "Development", "zh")).toBe("Unknown");
+    expect(metadataForDisplay(missing.gitSha, "Unknown", "zh")).toBe("Unknown");
+    const supplied = readBuildInfo({
+      gitSha: "0123456789abcdef0123456789abcdef01234567",
+      buildId: "4812f772-7c71-4ddd-8106-387e5238d766",
+      builtAt: "2026-11-15T00:38:00Z",
+      deployedAt: "2026-11-15T00:40:00Z",
+    });
+    for (const key of ["gitSha", "buildId", "builtAt", "deployedAt"] as const) {
+      expect(metadataForDisplay(supplied[key], "Preview", "zh")).toBe(supplied[key]);
+      expect(missing[key]).toBe("Unknown");
+    }
+  });
   it("creates unique identities even when two builds start at the same instant", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-11-15T00:38:00Z"));
