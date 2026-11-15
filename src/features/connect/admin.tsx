@@ -52,6 +52,7 @@ import { translateAdmin } from "./translations";
 import { ProductUnits } from "./product-units";
 import { ProductCatalog } from "./product-catalog";
 import { DppProductSummary, DppStatusPage } from "./dpp-status";
+import { BuildInfoPanel } from "./build-info-panel";
 import { downloadFile } from "./digital-link-qr";
 import {
   DEMO_SCAN_END,
@@ -254,11 +255,11 @@ export function AdminLayout() {
             <Outlet />
           </main>
           <footer className="admin-footer">
-            <span>© 2026 Product iCode Connect</span>
-            <span>
-              {t("Germany & European Union")}
-              <Globe2 size={13} />
-            </span>
+            <BuildInfoPanel />
+            <div className="admin-footer-legal">
+              <span>© 2026 Product iCode Connect</span>
+              <span>{t("Germany & European Union")} <Globe2 size={13} /></span>
+            </div>
           </footer>
         </div>
         <Dialog open={help} onOpenChange={setHelp}>

@@ -10,6 +10,24 @@
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 
 export default defineConfig({
+  vite: {
+    plugins: [
+      {
+        name: "connect-build-timestamp",
+        config(_config, env) {
+          // A build timestamp, NOT a deploy timestamp. SHA is intentionally not
+          // inferred from git HEAD or a main-branch lookup; absent CI SHA stays Unknown.
+          return {
+            define: {
+              "import.meta.env.VITE_BUILD_TIME": JSON.stringify(
+                env.command === "build" ? new Date().toISOString() : "",
+              ),
+            },
+          };
+        },
+      },
+    ],
+  },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this

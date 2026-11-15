@@ -59,3 +59,9 @@
 
 - [x] Replace fixed chart values with dated daily Demo windows and equal-period comparisons
 - [x] Verify 7/30/90-day totals, date ticks, three languages and mobile; deliver screenshots
+
+# Issue #26 / L-014
+
+- [x] Add shared read-only build metadata and multilingual copyable Admin version details
+- [x] Test metadata fallbacks, copying and desktop/mobile layouts; capture screenshots
+- [ ] Publish and compare the live Admin metadata with the deployment result

@@ -2077,6 +2077,22 @@ const adminCopy = {
   "Dpp.readError": { en: "DPP status could not be read. No readiness status is assumed.", zh: "无法读取 DPP 状态，不推断产品准备状态。", de: "DPP-Status konnte nicht gelesen werden. Es wird kein Bereitschaftsstatus angenommen." },
   "Dpp.empty": { en: "No products match these filters.", zh: "没有符合筛选条件的产品。", de: "Keine Produkte entsprechen diesen Filtern." },
   "Dpp.productStatus": { en: "DPP readiness", zh: "DPP 准备状态", de: "DPP-Vorbereitung" },
+  "Build.title": { en: "Version & build", zh: "版本与构建信息", de: "Version & Build" },
+  "Build.version": { en: "Version", zh: "版本号", de: "Version" },
+  "Build.provisional": { en: "Provisional label · pending owner approval", zh: "暂定标识 · 待负责人批准", de: "Vorläufige Kennzeichnung · Freigabe ausstehend" },
+  "Build.environment": { en: "Environment", zh: "环境", de: "Umgebung" },
+  "Build.Development": { en: "Development", zh: "开发环境", de: "Entwicklung" },
+  "Build.Preview": { en: "Preview", zh: "预览环境", de: "Vorschau" },
+  "Build.Stable Demo": { en: "Stable Demo", zh: "已发布 Demo", de: "Veröffentlichtes Demo" },
+  "Build.Unknown": { en: "Unknown", zh: "Unknown · 未提供", de: "Unknown · nicht angegeben" },
+  "Build.builtAt": { en: "Build time (UTC)", zh: "构建时间（UTC）", de: "Build-Zeit (UTC)" },
+  "Build.deployedAt": { en: "Deploy time (UTC)", zh: "发布时间（UTC）", de: "Veröffentlichungszeit (UTC)" },
+  "Build.site": { en: "Site", zh: "站点", de: "Website" },
+  "Build.copy": { en: "Copy version information", zh: "复制版本信息", de: "Versionsinformationen kopieren" },
+  "Build.copied": { en: "Version information copied", zh: "版本信息已复制", de: "Versionsinformationen kopiert" },
+  "Build.copyFailed": { en: "Clipboard unavailable. Select and copy the report below.", zh: "无法使用剪贴板，请选中下方信息手动复制。", de: "Zwischenablage nicht verfügbar. Bericht unten auswählen und kopieren." },
+  "Build.noSha": { en: "The build did not supply a verified commit. This is not the latest GitHub main SHA.", zh: "本次构建未提供可核实的提交信息，不以 GitHub main 最新 SHA 代替。", de: "Der Build liefert keinen verifizierbaren Commit. Der neueste GitHub-main-SHA wird nicht als Ersatz verwendet." },
+  "Build.limitations": { en: "Browser-local Demo · scan analytics and DPP statuses are simulated. No real cloud database, SSO or production-grade Resolver is connected.", zh: "Browser-local Demo · 浏览器本地演示；扫码分析与 DPP 状态为模拟内容。尚未连接真实云数据库、单点登录（SSO）和生产级 Resolver。", de: "Browser-local Demo · Scan-Analysen und DPP-Status sind simuliert. Keine echte Cloud-Datenbank, kein SSO und kein produktionsreifer Resolver verbunden." },
 } as const;
 for (const [key, values] of Object.entries(adminCopy)) {
   for (const locale of ["en", "zh", "de"] as const) copy[locale][`admin.${key}`] = values[locale];
