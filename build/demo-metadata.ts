@@ -1,3 +1,11 @@
+import { randomUUID } from "node:crypto";
+
+// Called by the Vite config hook, never by SSR or the browser. Cache the result
+// for the whole Vite invocation so all bundle environments share one identity.
+export function createBuildStamp() {
+  return Object.freeze({ builtAt: new Date().toISOString(), buildId: randomUUID() });
+}
+
 export type BuildMetadataInput = {
   VITE_APP_GIT_SHA?: string;
   VITE_BUILD_TIME?: string;
@@ -10,11 +18,14 @@ export function demoMetadataDefines(
   input: BuildMetadataInput,
   command: "build" | "serve",
   buildStartedAt: string,
+  buildId = "",
 ): Record<string, string> {
-  const buildTime = command === "build" ? input.VITE_BUILD_TIME || buildStartedAt : "";
+  const buildTime =
+    command === "build" ? (buildId ? buildStartedAt : input.VITE_BUILD_TIME || buildStartedAt) : "";
   return {
     "import.meta.env.VITE_APP_GIT_SHA": JSON.stringify(input.VITE_APP_GIT_SHA || ""),
     "import.meta.env.VITE_BUILD_TIME": JSON.stringify(buildTime),
+    "import.meta.env.VITE_BUILD_ID": JSON.stringify(command === "build" ? buildId : ""),
     "import.meta.env.VITE_DEPLOY_TIME": JSON.stringify(input.VITE_DEPLOY_TIME || ""),
   };
 }

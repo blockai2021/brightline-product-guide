@@ -62,6 +62,8 @@
 
 # Issue #26 / L-014
 
+- [x] Finalize: add a build-only UUID shared with the build timestamp, verify copying and document deployment-record linkage
+
 - [x] Follow-up: verify the live environment, harden metadata parsing/injection tests and document supported alternatives
 - [ ] Confirm follow-up source changes are deployed — blocked: publish requested, but live build timestamp still predates follow-up and hosted build status still reports the previous source revision
 

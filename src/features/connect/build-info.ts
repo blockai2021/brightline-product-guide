@@ -7,6 +7,7 @@ export type BuildInfo = Readonly<{
   versionApproved: boolean;
   gitSha: string;
   builtAt: string;
+  buildId: string;
   deployedAt: string;
 }>;
 
@@ -26,6 +27,7 @@ export function readBuildInfo(input: {
   version?: string;
   gitSha?: string;
   builtAt?: string;
+  buildId?: string;
   deployedAt?: string;
 }): BuildInfo {
   return Object.freeze({
@@ -35,6 +37,11 @@ export function readBuildInfo(input: {
       ? String(input.gitSha).toLowerCase()
       : "Unknown",
     builtAt: timestamp(input.builtAt),
+    buildId: /^[a-f0-9]{8}-[a-f0-9]{4}-4[a-f0-9]{3}-[89ab][a-f0-9]{3}-[a-f0-9]{12}$/i.test(
+      input.buildId || "",
+    )
+      ? String(input.buildId)
+      : "Unknown",
     deployedAt: timestamp(input.deployedAt),
   });
 }
@@ -52,6 +59,7 @@ export const buildInfo = readBuildInfo({
   version: import.meta.env["VITE_APP_VERSION"],
   gitSha: import.meta.env["VITE_APP_GIT_SHA"],
   builtAt: import.meta.env["VITE_BUILD_TIME"],
+  buildId: import.meta.env["VITE_BUILD_ID"],
   deployedAt: import.meta.env["VITE_DEPLOY_TIME"],
 });
 
@@ -68,6 +76,7 @@ export function versionReport(
     `${t("Build.environment")}: ${t(`Build.${environment}`)}`,
     `Git Commit SHA: ${info.gitSha}`,
     `${t("Build.builtAt")}: ${info.builtAt}`,
+    `Build ID: ${info.buildId}`,
     `${t("Build.deployedAt")}: ${info.deployedAt}`,
     `${t("Build.site")}: ${url}`,
     "Browser-local Demo",

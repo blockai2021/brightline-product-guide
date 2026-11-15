@@ -8,9 +8,57 @@ import {
 } from "@/features/connect/build-info";
 import { BuildInfoPanel } from "@/features/connect/build-info-panel";
 import { AdminLanguageProvider } from "@/features/connect/language";
-import { demoMetadataDefines } from "../../build/demo-metadata";
+import { createBuildStamp, demoMetadataDefines } from "../../build/demo-metadata";
 
 describe("Deployment identity integrity", () => {
+  it("creates unique identities even when two builds start at the same instant", () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-11-15T00:38:00Z"));
+    try {
+      const first = createBuildStamp();
+      const second = createBuildStamp();
+      expect(first.builtAt).toBe("2026-11-15T00:38:00.000Z");
+      expect(second.builtAt).toBe(first.builtAt);
+      expect(second.buildId).not.toBe(first.buildId);
+      expect(Object.isFrozen(first)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("keeps one build identity and clock through repeated bundle definitions and copy reports", () => {
+    const stamp = createBuildStamp();
+    const first = demoMetadataDefines(
+      { VITE_BUILD_TIME: "2020-01-01T00:00:00Z" },
+      "build",
+      stamp.builtAt,
+      stamp.buildId,
+    );
+    expect(demoMetadataDefines({}, "build", stamp.builtAt, stamp.buildId)).toEqual(first);
+    const info = readBuildInfo({
+      builtAt: JSON.parse(first["import.meta.env.VITE_BUILD_TIME"] || "null"),
+      buildId: JSON.parse(first["import.meta.env.VITE_BUILD_ID"] || "null"),
+    });
+    expect(info.buildId).toBe(stamp.buildId);
+    expect(info.builtAt).toBe(stamp.builtAt);
+    for (const locale of ["en", "zh", "de"] as const) {
+      expect(
+        versionReport(
+          info,
+          "Stable Demo",
+          locale,
+          "https://product-icode-platform.lovable.app/admin",
+        ),
+      ).toContain(`Build ID: ${stamp.buildId}`);
+    }
+    expect(readBuildInfo({}).buildId).toBe("Unknown");
+    expect(
+      JSON.parse(
+        demoMetadataDefines({}, "serve", stamp.builtAt, stamp.buildId)[
+          "import.meta.env.VITE_BUILD_ID"
+        ] || "null",
+      ),
+    ).toBe("");
+  });
   it("recognizes the exact formal domain regardless of DNS case or terminal dot", () => {
     expect(environmentForHost("PRODUCT-ICODE-PLATFORM.LOVABLE.APP.")).toBe("Stable Demo");
     expect(environmentForHost("product-icode-platform.lovable.app")).toBe("Stable Demo");

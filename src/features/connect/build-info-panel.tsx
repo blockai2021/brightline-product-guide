@@ -71,6 +71,10 @@ export function BuildInfoPanel() {
             </dd>
             <dt>{t("Build.builtAt")}</dt>
             <dd>{buildInfo.builtAt}</dd>
+            <dt>{t("Build.id")}</dt>
+            <dd>
+              <code>{buildInfo.buildId}</code>
+            </dd>
             <dt>{t("Build.deployedAt")}</dt>
             <dd>{buildInfo.deployedAt}</dd>
           </dl>

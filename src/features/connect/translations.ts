@@ -2086,6 +2086,7 @@ const adminCopy = {
   "Build.Stable Demo": { en: "Stable Demo", zh: "已发布 Demo", de: "Veröffentlichtes Demo" },
   "Build.Unknown": { en: "Unknown", zh: "Unknown · 未提供", de: "Unknown · nicht angegeben" },
   "Build.builtAt": { en: "Build time (UTC)", zh: "构建时间（UTC）", de: "Build-Zeit (UTC)" },
+  "Build.id": { en: "Build ID", zh: "构建 ID（Build ID）", de: "Build-ID" },
   "Build.deployedAt": { en: "Deploy time (UTC)", zh: "发布时间（UTC）", de: "Veröffentlichungszeit (UTC)" },
   "Build.site": { en: "Site", zh: "站点", de: "Website" },
   "Build.copy": { en: "Copy version information", zh: "复制版本信息", de: "Versionsinformationen kopieren" },

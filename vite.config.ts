@@ -9,7 +9,9 @@
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 import { loadEnv } from "vite";
-import { demoMetadataDefines } from "./build/demo-metadata";
+import { createBuildStamp, demoMetadataDefines } from "./build/demo-metadata";
+
+let buildStamp: ReturnType<typeof createBuildStamp> | undefined;
 
 export default defineConfig({
   vite: {
@@ -20,8 +22,14 @@ export default defineConfig({
           // A build timestamp, NOT a deploy timestamp. SHA is intentionally not
           // inferred from git HEAD or a main-branch lookup; absent CI SHA stays Unknown.
           const values = loadEnv(env.mode, config.envDir || process.cwd(), "VITE_");
+          if (env.command === "build") buildStamp ??= createBuildStamp();
           return {
-            define: demoMetadataDefines(values, env.command, new Date().toISOString()),
+            define: demoMetadataDefines(
+              values,
+              env.command,
+              buildStamp?.builtAt || "",
+              buildStamp?.buildId,
+            ),
           };
         },
       },
