@@ -34,3 +34,12 @@ GitHub Issue: https://github.com/blockai2021/brightline-product-guide/issues/26
 ```
 
 Only a Published release that has been checked at the actual live URL should be used as the internal testing baseline. Development, acceptance and publication are separate milestones. An Unknown SHA is honest fallback, not a verified match to the source commit. Preserve deployment tool evidence separately.
+
+## Actual acceptance on 2026-11-15
+
+- Code implementation commit: `a46e89ee0fe5a6cf25c9fa7df9510b299f350dc7` (not claimed as deployed SHA).
+- Publication requested through Lovable; published settings confirm public/published.
+- Actual live `/admin` returned HTTP 200 and the new version dialog at 00:27:56 UTC. Clipboard readback confirmed the complete report.
+- Live version: `V0.1-demo` (provisional); environment: `Stable Demo`; build timestamp: `2026-11-15T00:27:43.518Z`; commit: `Unknown`; deploy timestamp: `Unknown`.
+- Available CLI record confirms only the preview build of the implementation commit (`br_9fa54041-0522-4080-8249-76d2db365bf2`). It is not a production deployment SHA record. Exact production SHA matching remains unverified; no substitution was made. Keep that release verification in Review until a verified production build SHA/record is available.
+- 104 tests passed; automatic build OK; targeted lint passed; English/Chinese/German and desktop/mobile copy/display verified. No business-domain modules were changed.

@@ -64,4 +64,5 @@
 
 - [x] Add shared read-only build metadata and multilingual copyable Admin version details
 - [x] Test metadata fallbacks, copying and desktop/mobile layouts; capture screenshots
-- [ ] Publish and compare the live Admin metadata with the deployment result
+- [x] Publish and verify the live Admin version, timestamp, Unknown SHA and copy action
+- [ ] Match the live SHA to an actual production deployment record — blocked: no verified production SHA metadata/record is exposed by available tools; preview build records are not production evidence
