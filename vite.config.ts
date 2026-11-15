@@ -8,21 +8,20 @@
 // hosting already compresses at the edge.
 // You can pass additional config via defineConfig({ vite: { ... }, etc... }) if needed.
 import { defineConfig } from "@lovable.dev/vite-tanstack-config";
+import { loadEnv } from "vite";
+import { demoMetadataDefines } from "./build/demo-metadata";
 
 export default defineConfig({
   vite: {
     plugins: [
       {
         name: "connect-build-timestamp",
-        config(_config, env) {
+        config(config, env) {
           // A build timestamp, NOT a deploy timestamp. SHA is intentionally not
           // inferred from git HEAD or a main-branch lookup; absent CI SHA stays Unknown.
+          const values = loadEnv(env.mode, config.envDir || process.cwd(), "VITE_");
           return {
-            define: {
-              "import.meta.env.VITE_BUILD_TIME": JSON.stringify(
-                env.command === "build" ? new Date().toISOString() : "",
-              ),
-            },
+            define: demoMetadataDefines(values, env.command, new Date().toISOString()),
           };
         },
       },

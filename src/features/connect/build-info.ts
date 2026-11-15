@@ -11,7 +11,11 @@ export type BuildInfo = Readonly<{
 }>;
 
 function timestamp(value?: string): string {
-  if (!value || !/^\d{4}-\d{2}-\d{2}T/.test(value) || !Number.isFinite(Date.parse(value)))
+  if (
+    !value ||
+    !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/.test(value) ||
+    !Number.isFinite(Date.parse(value))
+  )
     return "Unknown";
   return new Date(value).toISOString();
 }
@@ -36,6 +40,7 @@ export function readBuildInfo(input: {
 }
 
 export function environmentForHost(hostname: string): DemoEnvironment {
+  hostname = hostname.toLowerCase().replace(/\.$/, "");
   if (hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1")
     return "Development";
   if (/^id-preview(?:-\d+)?--[a-z0-9-]+\.lovable\.app$/.test(hostname)) return "Preview";

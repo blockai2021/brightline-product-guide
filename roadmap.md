@@ -62,6 +62,8 @@
 
 # Issue #26 / L-014
 
+- [ ] Follow-up: verify the live environment, harden metadata parsing/injection tests and document supported alternatives
+
 - [x] Add shared read-only build metadata and multilingual copyable Admin version details
 - [x] Test metadata fallbacks, copying and desktop/mobile layouts; capture screenshots
 - [x] Publish and verify the live Admin version, timestamp, Unknown SHA and copy action

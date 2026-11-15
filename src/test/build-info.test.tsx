@@ -8,8 +8,58 @@ import {
 } from "@/features/connect/build-info";
 import { BuildInfoPanel } from "@/features/connect/build-info-panel";
 import { AdminLanguageProvider } from "@/features/connect/language";
+import { demoMetadataDefines } from "../../build/demo-metadata";
 
 describe("Deployment identity integrity", () => {
+  it("recognizes the exact formal domain regardless of DNS case or terminal dot", () => {
+    expect(environmentForHost("PRODUCT-ICODE-PLATFORM.LOVABLE.APP.")).toBe("Stable Demo");
+    expect(environmentForHost("product-icode-platform.lovable.app")).toBe("Stable Demo");
+    expect(environmentForHost("www.product-icode-platform.lovable.app")).toBe("Unknown");
+  });
+  it("recognizes main and draft previews without trusting lookalike domains", () => {
+    expect(environmentForHost("id-preview--4812f772-7c71-5ddd-8106-387e5238d766.lovable.app")).toBe(
+      "Preview",
+    );
+    expect(
+      environmentForHost("id-preview-12--4812f772-7c71-5ddd-8106-387e5238d766.lovable.app"),
+    ).toBe("Preview");
+    expect(environmentForHost("id-preview--4812f772.lovable.app.evil.test")).toBe("Unknown");
+  });
+  it("injects the build clock without inventing a commit or deploy time", () => {
+    const defines = demoMetadataDefines({}, "build", "2026-11-15T00:34:00.000Z");
+    expect(JSON.parse(defines["import.meta.env.VITE_APP_GIT_SHA"] || "null")).toBe("");
+    expect(JSON.parse(defines["import.meta.env.VITE_BUILD_TIME"] || "null")).toBe(
+      "2026-11-15T00:34:00.000Z",
+    );
+    expect(JSON.parse(defines["import.meta.env.VITE_DEPLOY_TIME"] || "null")).toBe("");
+    expect(readBuildInfo({}).deployedAt).toBe("Unknown");
+    expect(
+      JSON.parse(
+        demoMetadataDefines({}, "serve", "2026-11-15T00:34:00Z")[
+          "import.meta.env.VITE_BUILD_TIME"
+        ] || "null",
+      ),
+    ).toBe("");
+  });
+  it("preserves explicit pipeline metadata instead of replacing it with build or main values", () => {
+    const supplied = {
+      VITE_APP_GIT_SHA: "0123456789abcdef0123456789abcdef01234567",
+      VITE_BUILD_TIME: "2026-11-15T00:30:00Z",
+      VITE_DEPLOY_TIME: "2026-11-15T00:31:00Z",
+    };
+    const defines = demoMetadataDefines(supplied, "build", "2026-11-15T00:34:00Z");
+    for (const [key, value] of Object.entries(supplied)) {
+      expect(JSON.parse(defines[`import.meta.env.${key}`] || "null")).toBe(value);
+    }
+  });
+  it("rejects timezone-less times rather than silently depending on the browser timezone", () => {
+    expect(
+      readBuildInfo({ builtAt: "2026-11-15T00:34:00", deployedAt: "2026-11-15" }).builtAt,
+    ).toBe("Unknown");
+    expect(readBuildInfo({ deployedAt: "2026-11-15T01:34:00+01:00" }).deployedAt).toBe(
+      "2026-11-15T00:34:00.000Z",
+    );
+  });
   it("never substitutes a latest-main SHA when build metadata is absent or malformed", () => {
     expect(readBuildInfo({}).gitSha).toBe("Unknown");
     expect(readBuildInfo({ gitSha: "main" }).gitSha).toBe("Unknown");
