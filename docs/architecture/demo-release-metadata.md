@@ -29,6 +29,8 @@ Verifiable alternatives (not implemented integrations):
 
 Actual follow-up live inspection: the formal `/admin` returned HTTP 200, environment `Stable Demo`, build time `2026-11-15T00:27:43.518Z`, SHA/deploy time `Unknown`, and provisional `V0.1-demo`. The main hosted preview redirected to Lovable sign-in, so hosted-preview UI was not verified; preview hostname logic is covered by automated tests and localhost checks. The available preview record `br_5415f5bc-15c4-4f04-8508-df74fed9eebe` points to `3062a7a63d26b7921c0437ef42bb9b75e591b2d0` and is explicitly not a production record. No production SHA match is claimed.
 
+After the follow-up publish request, the actual live check at `2026-11-15T00:37:48Z` returned HTTP 200 and copied back `Stable Demo`, `V0.1-demo` provisional, build time `2026-11-15T00:28:58.488Z`, SHA `Unknown`, deploy time `Unknown`. Desktop and Chinese mobile were checked without page errors or horizontal overflow. This build time predates the follow-up source commits (`30f12e0`, `98f388d`); available hosted build status still reports the previous source revision. Therefore publication of the new follow-up code is **not confirmed**, even though the existing production environment identification and timestamp work. Do not pair either timestamp with an inferred production SHA. All 109 tests and the automatic local build passed.
+
 ## Release record template (Feishu not connected)
 
 Copy these fields into a release record; this task does not create or sync a Feishu table.

@@ -62,7 +62,8 @@
 
 # Issue #26 / L-014
 
-- [ ] Follow-up: verify the live environment, harden metadata parsing/injection tests and document supported alternatives
+- [x] Follow-up: verify the live environment, harden metadata parsing/injection tests and document supported alternatives
+- [ ] Confirm follow-up source changes are deployed — blocked: publish requested, but live build timestamp still predates follow-up and hosted build status still reports the previous source revision
 
 - [x] Add shared read-only build metadata and multilingual copyable Admin version details
 - [x] Test metadata fallbacks, copying and desktop/mobile layouts; capture screenshots
