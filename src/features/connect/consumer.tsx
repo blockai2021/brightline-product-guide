@@ -431,7 +431,7 @@ export function Consumer({
                   <p className="consumer-subtitle">{t("localSub")}</p>
                   <div className="consumer-events">
                     {state.campaigns
-                      .filter((e) => e.status !== "Draft")
+                      .filter((e) => e.status !== "Draft" && !e.deletedAt)
                       .map((e) => (
                         <article className="consumer-event" key={e.id}>
                           <div className="consumer-event-city" style={campaignCoverStyle(e)}>
@@ -451,7 +451,7 @@ export function Consumer({
                         </article>
                       ))}
                   </div>
-                  {!state.campaigns.some((e) => e.status !== "Draft") && <p>{t("empty")}</p>}
+                  {!state.campaigns.some((e) => e.status !== "Draft" && !e.deletedAt) && <p>{t("empty")}</p>}
                   <section className="consumer-marketing">
                     <Leaf size={26} />
                     <h2>{t("consent")}</h2>

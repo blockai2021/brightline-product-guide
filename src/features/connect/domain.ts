@@ -72,6 +72,8 @@ export type Campaign = {
   date: string;
   description: Localized;
   status: "Draft" | "Published" | "Closed";
+  /** Set when moved to Deleted (trash). */
+  deletedAt?: string | undefined;
   /** Optional https cover image URL. */
   coverImage?: string | undefined;
   /** Optional #rrggbb theme colour. */

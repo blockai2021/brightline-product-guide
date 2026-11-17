@@ -62,6 +62,7 @@ import { cn } from "@/lib/utils";
 import { AdminLanguageProvider, useAdminTranslation, useLanguage } from "./language";
 import { translateAdmin } from "./translations";
 import { ProductUnits } from "./product-units";
+import { CampaignBulkBar, CampaignCardActions, CampaignViewTabs, useCampaignSelection } from "./campaign-manager";
 import { ProductCatalog } from "./product-catalog";
 import { DppProductSummary, DppStatusPage } from "./dpp-status";
 import { BuildInfoPanel } from "./build-info-panel";
@@ -1376,6 +1377,7 @@ export function Marketing() {
   const [edit, setEdit] = useState<Campaign | null>(null);
   const [lang, setLang] = useState<Locale>("en");
   const [tab, setTab] = useState("Events");
+  const sel = useCampaignSelection(state.campaigns);
   const create = () =>
     setEdit({
       id: `demo-event-${crypto.randomUUID()}`,
@@ -1423,9 +1425,13 @@ export function Marketing() {
         ))}
       </div>
       {tab === "Events" ? (
+        <>
+        <CampaignViewTabs sel={sel} />
+        <CampaignBulkBar sel={sel} />
+        {!sel.visible.length && <p className="empty-state">{t("No events in this view.")}</p>}
         <div className="event-grid">
-          {state.campaigns.map((e) => (
-            <article className="event-card" key={e.id}>
+          {sel.visible.map((e) => (
+            <article className={cn("event-card", sel.selected.has(e.id) && "event-card-selected")} key={e.id}>
               <div className="event-cover" style={campaignCoverStyle(e)}>
                 {e.category && <em className="event-badge">{t(e.category)}</em>}
                 <Users size={36} />
@@ -1443,32 +1449,12 @@ export function Marketing() {
                 <span className="text-xs text-muted-foreground">
                   {state.records.filter((r) => r.eventId === e.id).length} {t("registrations")}
                 </span>
-                <div className="flex gap-2 mt-5">
-                  <Button variant="outline" size="sm" onClick={() => setEdit(e)}>
-                    {t("Edit event")}
-                  </Button>
-                  {e.status === "Published" && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        update((s) => ({
-                          ...s,
-                          campaigns: s.campaigns.map((v) =>
-                            v.id === e.id ? { ...v, status: "Closed" } : v,
-                          ),
-                        }));
-                        toast.success(t("Event closed. Registrations are disabled."));
-                      }}
-                    >
-                      {t("Close event")}
-                    </Button>
-                  )}
-                </div>
+                <CampaignCardActions sel={sel} event={e} onEdit={() => setEdit(e)} />
               </div>
             </article>
           ))}
         </div>
+        </>
       ) : (
         <div className="table-wrap">
           <table>
