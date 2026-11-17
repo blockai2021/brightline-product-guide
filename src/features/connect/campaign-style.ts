@@ -24,7 +24,7 @@ export function safeImageUrl(value?: string) {
 }
 /** Readable text colour for a hex background (WCAG relative luminance). */
 export function contrastText(hex: string) {
-  const [r, g, b] = [1, 3, 5].map((i) => {
+  const [r = 0, g = 0, b = 0] = [1, 3, 5].map((i) => {
     const c = parseInt(hex.slice(i, i + 2), 16) / 255;
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });

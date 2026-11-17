@@ -73,11 +73,11 @@ export type Campaign = {
   description: Localized;
   status: "Draft" | "Published" | "Closed";
   /** Optional https cover image URL. */
-  coverImage?: string;
+  coverImage?: string | undefined;
   /** Optional #rrggbb theme colour. */
-  themeColor?: string;
-  category?: "Workshop" | "Launch" | "Meetup" | "Webinar";
-  format?: "In person" | "Online";
+  themeColor?: string | undefined;
+  category?: "Workshop" | "Launch" | "Meetup" | "Webinar" | undefined;
+  format?: "In person" | "Online" | undefined;
 };
 export type RecordEntry = {
   id: string;
