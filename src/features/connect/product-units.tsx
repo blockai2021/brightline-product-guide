@@ -9,6 +9,7 @@ import {
   buildBrandedDigitalLinkUri,
   buildUnitExportCsv,
   createProductUnits,
+  findBatchByNumber,
   generateSerialCandidates,
   DEMO_DIGITAL_LINK_BASE_URL,
   type CreateProductUnitsResult,
@@ -38,6 +39,10 @@ export function ProductUnits({ productId, mode }: { productId: string; mode: "un
   const [selectedId, setSelectedId] = useState("");
   const [result, setResult] = useState<CreateProductUnitsResult>();
   const [error, setError] = useState("");
+  const conflict = findBatchByNumber(state.batches, batchNumber);
+  const conflictProduct = conflict
+    ? state.products.find((p) => p.draft.id === conflict.productId)?.draft.name
+    : undefined;
   const activeBatchId = batches.some((b) => b.id === batchId) ? batchId : (batches[0]?.id ?? "");
   const units = state.units.filter(
     (u) =>
@@ -151,8 +156,12 @@ export function ProductUnits({ productId, mode }: { productId: string; mode: "un
             />
             <Button
               variant="outline"
-              disabled={!batchNumber.trim()}
+              disabled={!batchNumber.trim() || !!conflict}
               onClick={() => {
+                if (findBatchByNumber(state.batches, batchNumber)) {
+                  toast.error(t("This batch number already exists."));
+                  return;
+                }
                 const id = `demo-batch-${crypto.randomUUID()}`;
                 update((s) => ({
                   ...s,
@@ -171,6 +180,30 @@ export function ProductUnits({ productId, mode }: { productId: string; mode: "un
               {t("Create batch")}
             </Button>
           </div>
+          {conflict && (
+            <p className="text-sm text-destructive" role="alert">
+              {conflict.productId === productId
+                ? t("This product already has this batch.")
+                : t("This batch number is already used by another product ({name}).").replace(
+                    "{name}",
+                    conflictProduct ?? conflict.productId,
+                  )}{" "}
+              {conflict.productId === productId && (
+                <button
+                  type="button"
+                  className="underline"
+                  onClick={() => {
+                    setBatchId(conflict.id);
+                    setBatchNumber("");
+                    setSelectedId("");
+                    setResult(undefined);
+                  }}
+                >
+                  {t("Select existing batch")}
+                </button>
+              )}
+            </p>
+          )}
           <div className="form-grid">
             <TextField
               label={t("Quantity (1–1000)")}

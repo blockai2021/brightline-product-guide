@@ -41,7 +41,7 @@ import { useDemo } from "./store";
 import { usePrintJobs } from "./printing-store";
 import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
-import {
+import { nextAvailableBatchNumber,
   assertIssuedGtinUnchanged,
   archiveProduct,
   deleteProduct,
@@ -845,7 +845,7 @@ export function Products({
           {
             id: `demo-batch-${crypto.randomUUID()}`,
             productId: id,
-            batchNumber: "DEMO-NEW",
+            batchNumber: nextAvailableBatchNumber(next.batches, "DEMO-NEW"),
             status: "Draft",
           },
         ],

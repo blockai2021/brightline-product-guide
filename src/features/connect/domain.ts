@@ -463,3 +463,23 @@ export function deleteProduct(state: DemoState, productId: string): DemoState {
     records: state.records.filter((r) => r.productId !== productId),
   };
 }
+
+export function normalizeBatchNumber(value: string): string {
+  return value.trim().toLowerCase();
+}
+/** Batch numbers are unique across the whole platform (trimmed, case-insensitive). */
+export function findBatchByNumber(
+  batches: readonly ProductionBatch[],
+  candidate: string,
+): ProductionBatch | undefined {
+  const key = normalizeBatchNumber(candidate);
+  if (!key) return undefined;
+  return batches.find((b) => normalizeBatchNumber(b.batchNumber) === key);
+}
+export function isBatchNumberTaken(batches: readonly ProductionBatch[], candidate: string): boolean {
+  return findBatchByNumber(batches, candidate) !== undefined;
+}
+export function nextAvailableBatchNumber(batches: readonly ProductionBatch[], base: string): string {
+  if (!isBatchNumberTaken(batches, base)) return base;
+  for (let i = 1; ; i++) if (!isBatchNumberTaken(batches, `${base}-${i}`)) return `${base}-${i}`;
+}
