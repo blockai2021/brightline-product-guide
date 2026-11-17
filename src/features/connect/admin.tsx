@@ -1,4 +1,5 @@
 import { useEffect, useReducer, useState } from "react";
+import { campaignCategories, campaignCoverStyle, campaignThemes, safeImageUrl, safeThemeColor } from "./campaign-style";
 import { Link, Outlet, useRouterState } from "@tanstack/react-router";
 import {
   ArrowDownToLine,
@@ -1425,9 +1426,10 @@ export function Marketing() {
         <div className="event-grid">
           {state.campaigns.map((e) => (
             <article className="event-card" key={e.id}>
-              <div className="event-cover">
+              <div className="event-cover" style={campaignCoverStyle(e)}>
+                {e.category && <em className="event-badge">{t(e.category)}</em>}
                 <Users size={36} />
-                <span>{e.city.split(",")[0]}</span>
+                <span>{e.format === "Online" ? t("Online") : e.city.split(",")[0]}</span>
               </div>
               <div className="p-5">
                 <div className="flex justify-between items-center">
@@ -1558,6 +1560,92 @@ export function Marketing() {
                   }
                 />
               </Field>
+              <Field label={t("Category")}>
+                <select
+                  className="select-control"
+                  value={edit.category ?? ""}
+                  onChange={(e) =>
+                    setEdit({
+                      ...edit,
+                      category: (e.target.value || undefined) as Campaign["category"],
+                    })
+                  }
+                >
+                  <option value="">{t("None")}</option>
+                  {campaignCategories.map((c) => (
+                    <option key={c} value={c}>
+                      {t(c)}
+                    </option>
+                  ))}
+                </select>
+              </Field>
+              <Field label={t("Format")}>
+                <select
+                  className="select-control"
+                  value={edit.format ?? "In person"}
+                  onChange={(e) =>
+                    setEdit({ ...edit, format: e.target.value as Campaign["format"] })
+                  }
+                >
+                  <option value="In person">{t("In person")}</option>
+                  <option value="Online">{t("Online")}</option>
+                </select>
+              </Field>
+              <h3 className="font-semibold mt-2">{t("Visual styling")}</h3>
+              <Field label={t("Theme color")}>
+                <div className="flex flex-wrap items-center gap-2">
+                  {campaignThemes.map((theme) => (
+                    <button
+                      type="button"
+                      key={theme.id}
+                      aria-label={t(`Theme ${theme.id}`)}
+                      title={t(`Theme ${theme.id}`)}
+                      className={`theme-swatch ${edit.themeColor === theme.color ? "selected" : ""}`}
+                      style={{ background: theme.color }}
+                      onClick={() => setEdit({ ...edit, themeColor: theme.color })}
+                    />
+                  ))}
+                  <input
+                    type="color"
+                    aria-label={t("Custom color")}
+                    value={safeThemeColor(edit.themeColor) ?? "#1f4e79"}
+                    onChange={(e) => setEdit({ ...edit, themeColor: e.target.value })}
+                  />
+                  {edit.themeColor && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setEdit({ ...edit, themeColor: undefined })}
+                    >
+                      {t("Reset")}
+                    </Button>
+                  )}
+                </div>
+              </Field>
+              <TextField
+                label={t("Cover image URL (https)")}
+                placeholder="https://images.unsplash.com/..."
+                value={edit.coverImage ?? ""}
+                onChange={(v) => setEdit({ ...edit, coverImage: v.trim() || undefined })}
+              />
+              {edit.coverImage && !safeImageUrl(edit.coverImage) && (
+                <p className="info-warning">{t("Only https image links are supported.")}</p>
+              )}
+              <span className="text-sm font-medium">{t("Live preview")}</span>
+              <article className="event-card">
+                <div className="event-cover" style={campaignCoverStyle(edit)}>
+                  {edit.category && <em className="event-badge">{t(edit.category)}</em>}
+                  <Users size={36} />
+                  <span>
+                    {edit.format === "Online" ? t("Online") : edit.city.split(",")[0]}
+                  </span>
+                </div>
+                <div className="p-4">
+                  <span className="text-xs text-muted-foreground">{edit.date}</span>
+                  <h2 className="mt-2">{edit.title[lang]}</h2>
+                  <p className="text-sm text-muted-foreground">{edit.description[lang]}</p>
+                </div>
+              </article>
               <div className="flex justify-end gap-2">
                 <Button variant="outline" onClick={() => save("Draft")}>
                   {t("Save draft")}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { campaignCoverStyle } from "./campaign-style";
 import { Link } from "@tanstack/react-router";
 import {
   ArrowRight,
@@ -433,9 +434,9 @@ export function Consumer({
                       .filter((e) => e.status !== "Draft")
                       .map((e) => (
                         <article className="consumer-event" key={e.id}>
-                          <div className="consumer-event-city">
+                          <div className="consumer-event-city" style={campaignCoverStyle(e)}>
                             <MapPin size={25} />
-                            <span>{e.city.split(",")[0]}</span>
+                            <span>{e.format === "Online" ? "Online" : e.city.split(",")[0]}</span>
                             <small>DEMO DATA</small>
                           </div>
                           <div className="consumer-event-content">
@@ -600,6 +601,11 @@ export function Consumer({
                 <form className="grid gap-4" onSubmit={submit}>
                   {modal === "Event" && event && (
                     <div className="event-modal-details">
+                      {campaignCoverStyle(event) && (
+                        <div className="event-modal-banner" style={campaignCoverStyle(event)}>
+                          {event.title[lang]}
+                        </div>
+                      )}
                       <p>{event.description[lang]}</p>
                       <span>
                         <MapPin size={15} />
