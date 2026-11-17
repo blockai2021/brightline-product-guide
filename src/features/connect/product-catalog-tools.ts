@@ -88,6 +88,6 @@ export function validateProductMapping(
   );
 }
 
-export function catalogStatus(entry: { published?: unknown; archivedAt?: string }) {
+export function catalogStatus(entry: { published?: unknown; archivedAt?: string | undefined }) {
   return entry.archivedAt ? "Archived" : entry.published ? "Published" : "Draft";
 }
