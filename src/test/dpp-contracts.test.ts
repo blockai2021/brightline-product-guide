@@ -216,4 +216,3 @@ describe("C-008 secure DPP deep links", () => {
     ).toThrow("Untrusted DPP deep link");
   });
 });
-

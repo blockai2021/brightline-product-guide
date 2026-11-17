@@ -488,4 +488,3 @@ describe("product import preview and apply", () => {
     expect(csv).not.toContain("Brand A");
   });
 });
-

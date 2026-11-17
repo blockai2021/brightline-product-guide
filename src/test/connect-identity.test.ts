@@ -326,4 +326,3 @@ describe("local demo migration", () => {
     expect(record?.details).toBe("Legacy record");
   });
 });
-

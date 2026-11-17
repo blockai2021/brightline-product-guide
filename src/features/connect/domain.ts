@@ -22,7 +22,7 @@ export type Product = {
   specs: string;
   publishedAt?: string;
 };
-export type ProductEntry = { draft: Product; published?: Product };
+export type ProductEntry = { draft: Product; published?: Product; archivedAt?: string };
 export type ProductContent = {
   id: string;
   productId: string;
@@ -426,3 +426,40 @@ export function setConsent(state: DemoState, email: string, active: boolean): De
   };
 }
 
+/** Withdraw the consumer snapshot but keep units, identities, mappings and records for audit. */
+export function archiveProduct(
+  state: DemoState,
+  productId: string,
+  now = new Date().toISOString(),
+): DemoState {
+  return {
+    ...state,
+    products: state.products.map((p) =>
+      p.draft.id === productId ? { draft: p.draft, archivedAt: now } : p,
+    ),
+  };
+}
+export function productDeletionImpact(state: DemoState, productId: string) {
+  const unitIds = new Set(state.units.filter((u) => u.productId === productId).map((u) => u.id));
+  return {
+    batches: state.batches.filter((b) => b.productId === productId).length,
+    units: unitIds.size,
+    identities: state.identities.filter((i) => unitIds.has(i.unitId)).length,
+    mappings: state.transparency.filter((t) => unitIds.has(t.unitId)).length,
+    records: state.records.filter((r) => r.productId === productId).length,
+  };
+}
+/** Demo-only cascade delete: removes the product and everything that references it. */
+export function deleteProduct(state: DemoState, productId: string): DemoState {
+  const unitIds = new Set(state.units.filter((u) => u.productId === productId).map((u) => u.id));
+  return {
+    ...state,
+    products: state.products.filter((p) => p.draft.id !== productId),
+    contents: state.contents.filter((c) => c.productId !== productId),
+    batches: state.batches.filter((b) => b.productId !== productId),
+    units: state.units.filter((u) => u.productId !== productId),
+    identities: state.identities.filter((i) => !unitIds.has(i.unitId)),
+    transparency: state.transparency.filter((t) => !unitIds.has(t.unitId)),
+    records: state.records.filter((r) => r.productId !== productId),
+  };
+}

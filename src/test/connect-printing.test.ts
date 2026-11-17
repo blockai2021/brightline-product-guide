@@ -152,4 +152,3 @@ describe("L-009 browser-local print jobs", () => {
     expect(() => pdfSampleRows(setup(10).job, 11)).toThrow("pdfLimit");
   });
 });
-

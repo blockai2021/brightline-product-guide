@@ -13,7 +13,12 @@ import { useDemo } from "./store";
 import { useAdminTranslation } from "./language";
 import { Field, Status } from "./ui";
 import { downloadFile } from "./digital-link-qr";
-import { catalogExportCsv, catalogPageSizes, catalogRows } from "./product-catalog-tools";
+import {
+  catalogExportCsv,
+  catalogStatus,
+  catalogPageSizes,
+  catalogRows,
+} from "./product-catalog-tools";
 import { downloadProductTemplate, ProductImportWizard } from "./product-import-wizard";
 
 export function ProductCatalog({ onOpen }: { onOpen: (id: string) => void }) {
@@ -98,6 +103,7 @@ export function ProductCatalog({ onOpen }: { onOpen: (id: string) => void }) {
             <option value="">{t("Catalog.allStatuses")}</option>
             <option value="Draft">{t("Draft")}</option>
             <option value="Published">{t("Published")}</option>
+            <option value="Archived">{t("Archived")}</option>
           </select>
         </Field>
       </div>
@@ -114,26 +120,28 @@ export function ProductCatalog({ onOpen }: { onOpen: (id: string) => void }) {
             </tr>
           </thead>
           <tbody>
-            {rows.slice((current - 1) * size, current * size).map(({ draft, published }) => (
-              <tr key={draft.id}>
-                <td>
-                  <strong>{draft.name}</strong>
-                  <small className="block text-muted-foreground">{draft.model}</small>
-                </td>
-                <td>{draft.sku || "—"}</td>
-                <td>{draft.gtin || "—"}</td>
-                <td>{draft.brand}</td>
-                <td>
-                  <Status value={published ? "Published" : "Draft"} />
-                </td>
-                <td>
-                  <Button size="sm" variant="outline" onClick={() => onOpen(draft.id)}>
-                    <ExternalLink />
-                    {t("Catalog.open")}
-                  </Button>
-                </td>
-              </tr>
-            ))}
+            {rows
+              .slice((current - 1) * size, current * size)
+              .map(({ draft, published, archivedAt }) => (
+                <tr key={draft.id}>
+                  <td>
+                    <strong>{draft.name}</strong>
+                    <small className="block text-muted-foreground">{draft.model}</small>
+                  </td>
+                  <td>{draft.sku || "—"}</td>
+                  <td>{draft.gtin || "—"}</td>
+                  <td>{draft.brand}</td>
+                  <td>
+                    <Status value={catalogStatus({ published, archivedAt })} />
+                  </td>
+                  <td>
+                    <Button size="sm" variant="outline" onClick={() => onOpen(draft.id)}>
+                      <ExternalLink />
+                      {t("Catalog.open")}
+                    </Button>
+                  </td>
+                </tr>
+              ))}
           </tbody>
         </table>
         {!rows.length && <p className="p-6 text-muted-foreground">{t("Catalog.empty")}</p>}

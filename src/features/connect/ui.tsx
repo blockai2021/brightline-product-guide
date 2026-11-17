@@ -12,7 +12,7 @@ export function Status({ value }: { value: string }) {
           ? "status-success"
           : ["Draft", "In progress"].includes(value)
             ? "status-warning"
-            : value === "Closed"
+            : value === "Closed" || value === "Archived"
               ? "status-muted"
               : "status-info",
       )}

@@ -39,9 +39,9 @@ export function catalogRows(
 ) {
   const query = filters.query.trim().toLocaleLowerCase();
   return products.filter(
-    ({ draft, published }) =>
+    ({ draft, published, archivedAt }) =>
       (!filters.brand || draft.brand === filters.brand) &&
-      (!filters.status || (published ? "Published" : "Draft") === filters.status) &&
+      (!filters.status || catalogStatus({ published, archivedAt }) === filters.status) &&
       (!query ||
         [draft.sku, draft.gtin, draft.name, draft.model, draft.brand].some((value) =>
           value.toLocaleLowerCase().includes(query),
@@ -86,4 +86,8 @@ export function validateProductMapping(
     new Set(values).size === values.length &&
     Object.keys(mapping).every((header) => table.headers.includes(header))
   );
+}
+
+export function catalogStatus(entry: { published?: unknown; archivedAt?: string }) {
+  return entry.archivedAt ? "Archived" : entry.published ? "Published" : "Draft";
 }

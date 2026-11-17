@@ -263,4 +263,3 @@ export function pdfSampleRows(job: PrintJob, count: number) {
     throw new PrintingError("pdfLimit");
   return job.rows.slice(0, count);
 }
-

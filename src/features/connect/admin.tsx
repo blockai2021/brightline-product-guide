@@ -28,6 +28,8 @@ import {
   Sparkles,
   Users,
   X,
+  Archive,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -36,10 +38,14 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useDemo } from "./store";
+import { usePrintJobs } from "./printing-store";
 import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
 import {
   assertIssuedGtinUnchanged,
+  archiveProduct,
+  deleteProduct,
+  productDeletionImpact,
   publishProduct,
   saveDraft,
   type Campaign,
@@ -258,7 +264,9 @@ export function AdminLayout() {
             <BuildInfoPanel />
             <div className="admin-footer-legal">
               <span>© 2026 Product iCode Connect</span>
-              <span>{t("Germany & European Union")} <Globe2 size={13} /></span>
+              <span>
+                {t("Germany & European Union")} <Globe2 size={13} />
+              </span>
             </div>
           </footer>
         </div>
@@ -760,6 +768,7 @@ export function Products({
   const { state, update, ready } = useDemo();
   const [selected, setSelected] = useState("demo-prod-airpure-001");
   const entry = state.products.find((p) => p.draft.id === selected);
+  const { jobs: printJobs, save: savePrintJobs } = usePrintJobs();
   const [form, setForm] = useState<Product>(entry?.draft || demoProduct);
   const [locale, setLocale] = useState<Locale>("en");
   const [query, setQuery] = useState("");
@@ -793,6 +802,27 @@ export function Products({
         ? t("Product published. Consumer page is now updated.")
         : t("Draft saved. Consumer page is unchanged."),
     );
+  }
+  function archive() {
+    if (!entry?.published || !window.confirm(t("Archive.confirm"))) return;
+    update((s) => archiveProduct(s, form.id));
+    toast.success(t("Archive.done"));
+  }
+  function remove() {
+    const impact = productDeletionImpact(state, form.id);
+    const jobs = printJobs.filter((job) => job.productId === form.id);
+    if (!window.confirm(t("Delete.confirm", { name: form.name, ...impact, jobs: jobs.length })))
+      return;
+    try {
+      if (jobs.length) savePrintJobs(printJobs.filter((job) => job.productId !== form.id));
+    } catch {
+      toast.error(t("Delete.storageError"));
+      return;
+    }
+    update((s) => deleteProduct(s, form.id));
+    setDirty(false);
+    setCatalog(true);
+    toast.success(t("Delete.done"));
   }
   function create() {
     const id = `demo-prod-${crypto.randomUUID()}`;
@@ -917,7 +947,19 @@ export function Products({
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <Status value={entry?.published ? "Published" : "Draft"} />
+              <Status
+                value={entry?.archivedAt ? "Archived" : entry?.published ? "Published" : "Draft"}
+              />
+              {entry?.published && (
+                <Button variant="outline" size="sm" onClick={archive}>
+                  <Archive />
+                  {t("Archive.action")}
+                </Button>
+              )}
+              <Button variant="destructive" size="sm" onClick={remove} disabled={!entry}>
+                <Trash2 />
+                {t("Delete.action")}
+              </Button>
               <Button variant="outline" size="sm" asChild>
                 <Link to="/admin/printing" search={{ productId: form.id }}>
                   <ClipboardList />
@@ -1787,4 +1829,3 @@ export function Transparency() {
 export function Dpp() {
   return <DppStatusPage />;
 }
-

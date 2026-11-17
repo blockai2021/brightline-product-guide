@@ -210,4 +210,3 @@ describe("QA-002 product import to identity, Transparency and printing integrati
     expect(normalizeGtin14("04012345678902")).toBeNull();
   });
 });
-

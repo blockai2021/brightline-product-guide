@@ -338,4 +338,3 @@ export function parseDppProductDeepLink(urlValue: string, allowedOrigins: readon
     throw new Error("Invalid DPP deep link productId");
   }
 }
-

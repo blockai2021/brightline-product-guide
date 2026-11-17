@@ -596,4 +596,3 @@ export function serializeProductImportResultCsv(result: Pick<ProductImportApplyR
     ),
   ].join("\r\n");
 }
-
