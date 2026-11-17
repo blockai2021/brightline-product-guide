@@ -2029,6 +2029,11 @@ const adminCopy = {
   Simulated: { en: "Simulated", zh: "模拟数据", de: "Simuliert" },
   Pending: { en: "Pending", zh: "待审核", de: "Ausstehend" },
   Confirmed: { en: "Confirmed", zh: "已确认依据", de: "Nachweis bestätigt" },
+  "All statuses": { en: "All statuses", zh: "全部状态", de: "Alle Status" },
+  "From date": { en: "From date", zh: "开始日期", de: "Von Datum" },
+  "To date": { en: "To date", zh: "结束日期", de: "Bis Datum" },
+  "Clear filters": { en: "Clear filters", zh: "清除筛选", de: "Filter zurücksetzen" },
+  "{count} records": { en: "{count} records", zh: "共 {count} 条记录", de: "{count} Datensätze" },
   "All products": { en: "All products", zh: "全部产品", de: "Alle Produkte" },
   "Search mappings": { en: "Search mappings", zh: "搜索身份映射", de: "Zuordnungen suchen" },
   "Product ID, model, SKU, GTIN, unit ID or serial": {

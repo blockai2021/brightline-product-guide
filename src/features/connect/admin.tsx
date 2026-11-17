@@ -41,6 +41,11 @@ import { useDemo } from "./store";
 import { usePrintJobs } from "./printing-store";
 import { DemoNotice, Field, Status, TextField } from "./ui";
 import { demoProduct } from "./seed";
+import {
+  emptyAfterSalesFilters,
+  filterAfterSalesRecords,
+  type AfterSalesFilters,
+} from "./after-sales-filter";
 import { nextAvailableBatchNumber,
   assertIssuedGtinUnchanged,
   archiveProduct,
@@ -1213,14 +1218,11 @@ export function Products({
 export function AfterSales() {
   const { t, language } = useAdminTranslation();
   const { state, update } = useDemo();
-  const [filter, setFilter] = useState("All records");
-  const [query, setQuery] = useState("");
-  const records = state.records.filter(
-    (r) =>
-      r.kind !== "Event" &&
-      (filter === "All records" || r.kind === filter) &&
-      `${r.name} ${r.email} ${r.id}`.toLowerCase().includes(query.toLowerCase()),
-  );
+  const [f, setF] = useState<AfterSalesFilters>(emptyAfterSalesFilters);
+  const set = (patch: Partial<AfterSalesFilters>) => setF((v) => ({ ...v, ...patch }));
+  const records = filterAfterSalesRecords(state, f);
+  const batchOptions = state.batches.filter((b) => !f.productId || b.productId === f.productId);
+  const active = JSON.stringify(f) !== JSON.stringify(emptyAfterSalesFilters);
   return (
     <>
       <PageHeading
@@ -1230,15 +1232,15 @@ export function AfterSales() {
       <DemoNotice />
       <div className="section-head mt-7">
         <div className="segmented">
-          {["All records", "Warranty", "Support"].map((f) => (
+          {["", "Warranty", "Support"].map((k) => (
             <Button
-              key={f}
+              key={k || "all"}
               size="sm"
               variant="ghost"
-              className={filter === f ? "selected" : ""}
-              onClick={() => setFilter(f)}
+              className={f.kind === k ? "selected" : ""}
+              onClick={() => set({ kind: k })}
             >
-              {t(f)}
+              {t(k || "All records")}
             </Button>
           ))}
         </div>
@@ -1247,11 +1249,61 @@ export function AfterSales() {
           <Input
             aria-label={t("Search customer records")}
             placeholder={t("Search demo records…")}
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
+            value={f.query}
+            onChange={(e) => set({ query: e.target.value })}
           />
         </div>
       </div>
+      <div className="form-grid mt-4 items-end">
+        <Field label={t("Product")}>
+          <select
+            className="select-control"
+            value={f.productId}
+            onChange={(e) => set({ productId: e.target.value, batchId: "" })}
+          >
+            <option value="">{t("All products")}</option>
+            {state.products.map((p) => (
+              <option key={p.draft.id} value={p.draft.id}>
+                {p.draft.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label={t("Production batch")}>
+          <select
+            className="select-control"
+            value={f.batchId}
+            onChange={(e) => set({ batchId: e.target.value })}
+          >
+            <option value="">{t("All batches")}</option>
+            {batchOptions.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.batchNumber}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label={t("Status")}>
+          <select
+            className="select-control"
+            value={f.status}
+            onChange={(e) => set({ status: e.target.value })}
+          >
+            <option value="">{t("All statuses")}</option>
+            <option value="New">{t("New")}</option>
+            <option value="In progress">{t("In progress")}</option>
+            <option value="Resolved">{t("Resolved")}</option>
+          </select>
+        </Field>
+        <TextField label={t("From date")} type="date" value={f.from} onChange={(v) => set({ from: v })} />
+        <TextField label={t("To date")} type="date" value={f.to} onChange={(v) => set({ to: v })} />
+        <Button variant="outline" disabled={!active} onClick={() => setF(emptyAfterSalesFilters)}>
+          {t("Clear filters")}
+        </Button>
+      </div>
+      <p className="text-sm text-muted-foreground mt-3">
+        {t("{count} records", { count: records.length })}
+      </p>
       <div className="table-wrap">
         <table>
           <thead>
